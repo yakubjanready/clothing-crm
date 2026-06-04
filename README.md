@@ -73,6 +73,55 @@ npm run dev
 npm run test
 ```
 
+## Ma'lumotlar bazasi va migratsiyalar
+
+Loyiha **PostgreSQL** (async, `asyncpg` drayveri) va **Alembic** dan foydalanadi.
+
+### Umumiy mixinlar (`backend/app/db/base.py`)
+
+Har bir biznes modeli quyidagi mixinlardan meros oladi:
+- `UUIDPrimaryKeyMixin` — `id: UUID` (default `uuid4`)
+- `TimestampMixin` — `created_at`, `updated_at` (TZ-aware, server-side `NOW()`)
+- `SoftDeleteMixin` — `deleted_at` (nullable), `is_deleted`, `soft_delete()`, `restore()`
+
+Misol:
+```python
+from app.db import Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin
+
+class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
+    __tablename__ = "customers"
+    # ... ustunlar
+```
+
+### Alembic buyruqlari
+
+**Yangi model qo'shgandan keyin** (`app/models/<name>.py` faylida) — modelni
+`app/models/__init__.py` orqali import qilib, autogenerate ishlatish:
+
+```bash
+# Docker bilan (compose ishga tushgan paytda):
+docker compose exec backend alembic revision --autogenerate -m "add customers"
+docker compose exec backend alembic upgrade head
+
+# Lokal venv'da:
+cd backend
+alembic revision --autogenerate -m "add customers"
+alembic upgrade head
+```
+
+**Boshqa foydali buyruqlar:**
+```bash
+alembic current              # joriy versiyani ko'rsatish
+alembic history --verbose    # to'liq tarix
+alembic downgrade -1         # bitta orqaga qaytarish
+alembic downgrade base       # boshlang'ich holatga qaytarish
+alembic upgrade head --sql   # SQL chiqarish (DBga tegmasdan, prod review uchun)
+```
+
+**Eslatma:** alembic autogenerate'ning ishlashi uchun barcha modellar
+`alembic/env.py`'da ko'rinadigan bo'lishi kerak (`import app.models`).
+Hozircha biznes modellar yo'q — bo'sh placeholder qoldirilgan.
+
 ## Faza intizomi
 
 Har bir faza yakuni: **TEST → SCREENSHOT → COMMIT → "FAZA N TUGADI"**.
