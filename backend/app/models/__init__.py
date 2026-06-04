@@ -10,6 +10,11 @@ from app.models.customer import Customer, CustomerSegment, PriceType
 from app.models.customer_contact import CustomerContact
 from app.models.customer_interaction import CustomerInteraction, InteractionType
 from app.models.department import Department
+from app.models.invoice import Invoice, InvoiceStatus
+from app.models.order import Order, OrderStatus
+from app.models.order_item import OrderItem
+from app.models.order_return import Return, ReturnItem, ReturnStatus
+from app.models.payment import Payment, PaymentMethod
 from app.models.employee import Employee, EmployeeStatus
 from app.models.inventory import Inventory, InventoryItem, InventoryStatus
 from app.models.permission import Permission
@@ -30,6 +35,10 @@ __all__ = [
     "Customer", "CustomerContact", "CustomerInteraction",
     "CustomerSegment", "PriceType", "InteractionType",
     "Department",
+    "Invoice", "InvoiceStatus",
+    "Order", "OrderItem", "OrderStatus",
+    "Payment", "PaymentMethod",
+    "Return", "ReturnItem", "ReturnStatus",
     "Employee", "EmployeeStatus",
     "Gender",
     "Inventory", "InventoryItem", "InventoryStatus",

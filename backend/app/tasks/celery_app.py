@@ -39,3 +39,16 @@ def notify_low_stock(
     )
     print(msg)
     return msg
+
+
+@celery_app.task(name="generate_invoice_pdf")
+def generate_invoice_pdf(invoice_id: str) -> str:
+    """Invoice uchun PDF generatsiya qiladi (hozir stub).
+
+    Real implementatsiyada: reportlab/weasyprint bilan PDF tuziladi va
+    `settings.MEDIA_ROOT/invoices/{invoice_id}.pdf` ga saqlanadi. Task tugagach
+    DB'dagi Invoice.pdf_url va status sync DB sessiya bilan yangilanadi.
+    """
+    pdf_url = f"/media/invoices/{invoice_id}.pdf"
+    print(f"[INVOICE PDF] generated stub: {pdf_url}")
+    return pdf_url

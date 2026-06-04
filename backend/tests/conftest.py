@@ -83,7 +83,7 @@ async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
     perm_codes = [
         "user:read", "user:write", "user:delete",
         "customer:read", "customer:write", "customer:delete",
-        "order:read",
+        "order:read", "order:write", "order:approve",
         "hr:read", "hr:write", "hr:delete", "audit:read",
         "product:read", "product:write", "product:delete",
         "warehouse:read", "warehouse:write",
@@ -97,7 +97,11 @@ async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
     admin.permissions = list(perms.values())
 
     sales = Role(name=RoleName.SALES, description="sales")
-    sales.permissions = [perms["customer:read"], perms["order:read"]]
+    sales.permissions = [
+        perms["customer:read"],
+        perms["order:read"], perms["order:write"],
+        # ESLATMA: sales'da order:approve YO'Q (confirm faqat manager+ ga)
+    ]
 
     db.add_all([admin, sales])
     await db.commit()

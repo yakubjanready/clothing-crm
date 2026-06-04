@@ -65,6 +65,22 @@ from app.schemas.customer_interaction import (
     CustomerInteractionCreate,
     CustomerInteractionRead,
 )
+from app.schemas.invoice import InvoiceRead
+from app.schemas.order import (
+    CancelRequest,
+    OrderCreate,
+    OrderItemCreate,
+    OrderItemRead,
+    OrderRead,
+    OrderUpdate,
+)
+from app.schemas.order_return import (
+    ReturnCreate,
+    ReturnItemCreate,
+    ReturnItemRead,
+    ReturnRead,
+)
+from app.schemas.payment import PaymentCreate, PaymentRead
 from app.schemas.warehouse import WarehouseCreate, WarehouseRead, WarehouseUpdate
 
 __all__ = [
@@ -89,4 +105,9 @@ __all__ = [
     "CustomerContactCreate", "CustomerContactRead",
     "CustomerInteractionCreate", "CustomerInteractionRead",
     "CustomerBalanceResponse",
+    "OrderCreate", "OrderUpdate", "OrderRead",
+    "OrderItemCreate", "OrderItemRead", "CancelRequest",
+    "PaymentCreate", "PaymentRead",
+    "InvoiceRead",
+    "ReturnCreate", "ReturnItemCreate", "ReturnItemRead", "ReturnRead",
 ]

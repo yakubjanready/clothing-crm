@@ -61,3 +61,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | customer__faza7__01-pytest-green.png       | 7 | customer | 112 ta test yashil (customer 18: kredit limit pure 6, CRUD+filter 6, contacts 2, interactions 2, balance 2) |
 | customer__faza7__02-alembic-migrations.png | 7 | customer | Alembic: warehouse_module → customer_module; customers (CHECK debt/credit_limit>=0)/customer_contacts/customer_interactions |
 | customer__faza7__03-db-tables.png          | 7 | customer | Real Postgres: 23 jadval, 21 perm (customer:delete qo'shildi), customers CHECK va CASCADE FK lar |
+
+## Faza 8 — Sotuv (Order/OrderItem/Payment/Invoice/Return + state machine + Celery PDF)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| sales__faza8__01-pytest-green.png       | 8 | sales | 152 ta test yashil (sales 40: state machine pure 14, create draft+confirm+pay+ship+cancel+return+invoice e2e) |
+| sales__faza8__02-alembic-migrations.png | 8 | sales | Alembic: customer → sales_module; orders/order_items/payments/invoices/returns/return_items |
+| sales__faza8__03-db-tables.png          | 8 | sales | Real Postgres: 29 jadval, orders CHECK constraintlari + CASCADE FK (items/payments/invoices) va RESTRICT (returns, customer, warehouse) |
