@@ -45,3 +45,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | catalog__faza5__01-pytest-green.png       | 5 | catalog | 76 ta test yashil (catalog 19: slugify+SKU pure 4, category tree 3, brand 1, product filter 2, variant single+matrix+unique 4, upload 4, permission 1) |
 | catalog__faza5__02-alembic-migrations.png | 5 | catalog | Alembic: hr_module → catalog_module; categories/brands/products/product_variants/attribute_values |
 | catalog__faza5__03-db-tables.png          | 5 | catalog | Real Postgres: 15 jadval (5 yangi), 20 perm (product:delete qo'shildi) |
+
+## Faza 6 — Ombor (Warehouse/Stock/StockMovement/Inventory)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| warehouse__faza6__01-pytest-green.png       | 6 | warehouse | 94 ta test yashil (warehouse 18: CRUD 4, receive/issue 3, transfer atomik 3, reserve/release 4, low-stock notify celery 1, inventory finalize 2, history 1) |
+| warehouse__faza6__02-alembic-migrations.png | 6 | warehouse | Alembic: catalog_module → warehouse_module; warehouses/stocks (CHECK)/stock_movements/inventories/inventory_items |
+| warehouse__faza6__03-db-tables.png          | 6 | warehouse | Real Postgres: 20 jadval, stocks ko'p CHECK constraintlari + UNIQUE(warehouse_id, variant_id) |

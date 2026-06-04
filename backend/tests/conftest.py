@@ -85,6 +85,7 @@ async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
         "customer:read", "order:read",
         "hr:read", "hr:write", "hr:delete", "audit:read",
         "product:read", "product:write", "product:delete",
+        "warehouse:read", "warehouse:write",
     ]
     perms = {code: Permission(code=code, description=code) for code in perm_codes}
     for p in perms.values():

@@ -41,6 +41,24 @@ from app.schemas.product_variant import (
     VariantRead,
     VariantUpdate,
 )
+from app.schemas.inventory import (
+    InventoryCreate,
+    InventoryFinalizeResponse,
+    InventoryItemCount,
+    InventoryItemRead,
+    InventoryRead,
+)
+from app.schemas.stock import (
+    MovementIssue,
+    MovementReceive,
+    MovementRelease,
+    MovementReserve,
+    MovementTransfer,
+    StockMinUpdate,
+    StockMovementRead,
+    StockRead,
+)
+from app.schemas.warehouse import WarehouseCreate, WarehouseRead, WarehouseUpdate
 
 __all__ = [
     "LoginRequest", "RefreshRequest", "TokenPair", "UserRead", "UserCreate", "RoleRead",
@@ -54,4 +72,10 @@ __all__ = [
     "VariantCreate", "VariantUpdate", "VariantRead",
     "VariantColorSpec", "VariantMatrixRequest", "VariantMatrixResponse",
     "AttributeValueCreate", "AttributeValueUpdate", "AttributeValueRead",
+    "WarehouseCreate", "WarehouseUpdate", "WarehouseRead",
+    "StockRead", "StockMinUpdate", "StockMovementRead",
+    "MovementReceive", "MovementIssue", "MovementTransfer",
+    "MovementReserve", "MovementRelease",
+    "InventoryCreate", "InventoryRead", "InventoryItemRead",
+    "InventoryItemCount", "InventoryFinalizeResponse",
 ]
