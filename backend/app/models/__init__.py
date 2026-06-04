@@ -6,6 +6,9 @@ from app.models.associations import role_permissions, user_roles
 from app.models.attribute_value import AttributeValue
 from app.models.brand import Brand
 from app.models.category import Category
+from app.models.customer import Customer, CustomerSegment, PriceType
+from app.models.customer_contact import CustomerContact
+from app.models.customer_interaction import CustomerInteraction, InteractionType
 from app.models.department import Department
 from app.models.employee import Employee, EmployeeStatus
 from app.models.inventory import Inventory, InventoryItem, InventoryStatus
@@ -24,6 +27,8 @@ __all__ = [
     "AttributeValue",
     "Brand",
     "Category",
+    "Customer", "CustomerContact", "CustomerInteraction",
+    "CustomerSegment", "PriceType", "InteractionType",
     "Department",
     "Employee", "EmployeeStatus",
     "Gender",

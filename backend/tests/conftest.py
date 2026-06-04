@@ -82,7 +82,8 @@ async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
     """Minimal RBAC: admin va sales rollari + bir nechta permission (HR ham)."""
     perm_codes = [
         "user:read", "user:write", "user:delete",
-        "customer:read", "order:read",
+        "customer:read", "customer:write", "customer:delete",
+        "order:read",
         "hr:read", "hr:write", "hr:delete", "audit:read",
         "product:read", "product:write", "product:delete",
         "warehouse:read", "warehouse:write",

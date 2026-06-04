@@ -58,6 +58,13 @@ from app.schemas.stock import (
     StockMovementRead,
     StockRead,
 )
+from app.schemas.customer import CustomerCreate, CustomerRead, CustomerUpdate
+from app.schemas.customer_balance import CustomerBalanceResponse
+from app.schemas.customer_contact import CustomerContactCreate, CustomerContactRead
+from app.schemas.customer_interaction import (
+    CustomerInteractionCreate,
+    CustomerInteractionRead,
+)
 from app.schemas.warehouse import WarehouseCreate, WarehouseRead, WarehouseUpdate
 
 __all__ = [
@@ -78,4 +85,8 @@ __all__ = [
     "MovementReserve", "MovementRelease",
     "InventoryCreate", "InventoryRead", "InventoryItemRead",
     "InventoryItemCount", "InventoryFinalizeResponse",
+    "CustomerCreate", "CustomerUpdate", "CustomerRead",
+    "CustomerContactCreate", "CustomerContactRead",
+    "CustomerInteractionCreate", "CustomerInteractionRead",
+    "CustomerBalanceResponse",
 ]

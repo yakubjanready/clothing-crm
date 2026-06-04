@@ -53,3 +53,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | warehouse__faza6__01-pytest-green.png       | 6 | warehouse | 94 ta test yashil (warehouse 18: CRUD 4, receive/issue 3, transfer atomik 3, reserve/release 4, low-stock notify celery 1, inventory finalize 2, history 1) |
 | warehouse__faza6__02-alembic-migrations.png | 6 | warehouse | Alembic: catalog_module → warehouse_module; warehouses/stocks (CHECK)/stock_movements/inventories/inventory_items |
 | warehouse__faza6__03-db-tables.png          | 6 | warehouse | Real Postgres: 20 jadval, stocks ko'p CHECK constraintlari + UNIQUE(warehouse_id, variant_id) |
+
+## Faza 7 — Mijozlar (Customer/Contact/Interaction + kredit limit)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| customer__faza7__01-pytest-green.png       | 7 | customer | 112 ta test yashil (customer 18: kredit limit pure 6, CRUD+filter 6, contacts 2, interactions 2, balance 2) |
+| customer__faza7__02-alembic-migrations.png | 7 | customer | Alembic: warehouse_module → customer_module; customers (CHECK debt/credit_limit>=0)/customer_contacts/customer_interactions |
+| customer__faza7__03-db-tables.png          | 7 | customer | Real Postgres: 23 jadval, 21 perm (customer:delete qo'shildi), customers CHECK va CASCADE FK lar |
