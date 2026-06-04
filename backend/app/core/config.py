@@ -33,7 +33,12 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = "redis://redis:6379/2"
 
     SECRET_KEY: str = "change-me-please-min-32-characters-long"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    JWT_ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    INITIAL_ADMIN_EMAIL: str = "admin@example.com"
+    INITIAL_ADMIN_PASSWORD: str = "ChangeMe123!"
 
 
 @lru_cache

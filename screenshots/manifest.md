@@ -21,3 +21,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 |------|------|------------|------|
 | db__faza2__01-pytest-green.png       | 2 | db | Backend pytest yashil — 9 ta test (test_db_base.py qo'shildi) |
 | db__faza2__02-db-layer-loaded.png    | 2 | db | DB qatlami import + Alembic config yuklanishi (engine: postgresql+asyncpg) |
+
+## Faza 3 — Auth + RBAC
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| auth__faza3__01-pytest-green.png     | 3 | auth | 38 ta test yashil (security 10, modellar 6, endpointlar 13 — aiosqlite + fakeredis) |
+| auth__faza3__02-alembic-migration.png| 3 | auth | Alembic autogenerate + upgrade head: permissions, roles, users, user_roles, role_permissions |
+| auth__faza3__03-seed-rbac.png        | 3 | auth | Real Postgres'da seed: 15 perm + 7 rol + 47 role-perm mapping + admin user |

@@ -9,10 +9,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from app.core.config import settings
 from app.db.base import Base
 
-# Autogenerate'da modellar topilishi uchun ularni shu yerda import qilish kerak.
-# Hozir biznes modeli yo'q — qo'shilgach `from app.models import *` yoki
-# har bir modelni alohida import qiling.
-# import app.models  # noqa: F401
+# Autogenerate'da modellar topilishi uchun ularni shu yerda import qilamiz.
+import app.models  # noqa: F401
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
