@@ -6,6 +6,7 @@ from collections.abc import AsyncGenerator
 import pytest
 from fakeredis.aioredis import FakeRedis
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -28,6 +29,13 @@ from app.models.user import User
 @pytest.fixture
 async def test_engine() -> AsyncGenerator[AsyncEngine, None]:
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
+
+    @event.listens_for(engine.sync_engine, "connect")
+    def _enable_sqlite_fk(dbapi_conn, _):
+        cursor = dbapi_conn.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     yield engine
@@ -71,8 +79,12 @@ async def client(
 # ---- RBAC seed fixtures ----
 
 async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
-    """Minimal RBAC: admin va sales rollari + bir nechta permission."""
-    perm_codes = ["user:read", "user:write", "user:delete", "customer:read", "order:read"]
+    """Minimal RBAC: admin va sales rollari + bir nechta permission (HR ham)."""
+    perm_codes = [
+        "user:read", "user:write", "user:delete",
+        "customer:read", "order:read",
+        "hr:read", "hr:write", "hr:delete", "audit:read",
+    ]
     perms = {code: Permission(code=code, description=code) for code in perm_codes}
     for p in perms.values():
         db.add(p)

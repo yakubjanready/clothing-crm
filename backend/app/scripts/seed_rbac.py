@@ -42,6 +42,10 @@ PERMISSIONS: list[tuple[str, str]] = [
     ("accounting:read", "Hisob-kitobni ko'rish"),
     ("accounting:write","Hisob-kitob yozish"),
     ("report:read",     "Hisobotlarni ko'rish"),
+    ("hr:read",         "HR — xodimlar/bo'lim/lavozimlarni ko'rish"),
+    ("hr:write",        "HR — yaratish/tahrirlash/restore"),
+    ("hr:delete",       "HR — yumshoq o'chirish"),
+    ("audit:read",      "Audit jurnalini ko'rish"),
 ]
 
 ALL = [p[0] for p in PERMISSIONS]
@@ -53,12 +57,14 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "customer:read", "product:read",
         "order:read", "order:approve",
         "warehouse:read", "accounting:read", "report:read",
+        "hr:read", "audit:read",
     ],
     RoleName.MANAGER: [
         "customer:read", "customer:write",
         "product:read",
         "order:read", "order:write", "order:approve",
         "warehouse:read", "report:read",
+        "hr:read", "hr:write",
     ],
     RoleName.SALES: [
         "customer:read", "customer:write",
