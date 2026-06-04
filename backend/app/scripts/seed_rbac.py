@@ -32,8 +32,9 @@ PERMISSIONS: list[tuple[str, str]] = [
     ("user:delete",     "Foydalanuvchini o'chirish"),
     ("customer:read",   "Mijozlarni ko'rish"),
     ("customer:write",  "Mijoz qo'shish/tahrirlash"),
-    ("product:read",    "Mahsulotlarni ko'rish"),
-    ("product:write",   "Mahsulot qo'shish/tahrirlash"),
+    ("product:read",    "Mahsulot/kategoriya/brendni ko'rish"),
+    ("product:write",   "Mahsulot/kategoriya/brendni qo'shish/tahrirlash + rasm yuklash"),
+    ("product:delete",  "Mahsulot/kategoriya/brendni yumshoq o'chirish"),
     ("order:read",      "Buyurtmalarni ko'rish"),
     ("order:write",     "Buyurtma yaratish/tahrirlash"),
     ("order:approve",   "Buyurtmani tasdiqlash"),
@@ -76,6 +77,7 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "product:read", "product:write",
         "order:read",
     ],
+    # ESLATMA: product:delete faqat admin'da (default ALL ichida)
     RoleName.ACCOUNTANT: [
         "customer:read",
         "order:read",

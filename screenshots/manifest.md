@@ -37,3 +37,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | hr__faza4__01-pytest-green.png       | 4 | hr | 57 ta test yashil (pagination 5, HR CRUD 14, mavjudlar 38) |
 | hr__faza4__02-alembic-migrations.png | 4 | hr | Alembic: auth_rbac → hr_module migratsiya; tarix va current |
 | hr__faza4__03-db-tables.png          | 4 | hr | Real Postgres: 10 jadval, 19 perm (4 yangi: hr:read/write/delete + audit:read), 55 role-perm mapping |
+
+## Faza 5 — Katalog (Category/Brand/Product/Variant + upload)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| catalog__faza5__01-pytest-green.png       | 5 | catalog | 76 ta test yashil (catalog 19: slugify+SKU pure 4, category tree 3, brand 1, product filter 2, variant single+matrix+unique 4, upload 4, permission 1) |
+| catalog__faza5__02-alembic-migrations.png | 5 | catalog | Alembic: hr_module → catalog_module; categories/brands/products/product_variants/attribute_values |
+| catalog__faza5__03-db-tables.png          | 5 | catalog | Real Postgres: 15 jadval (5 yangi), 20 perm (product:delete qo'shildi) |

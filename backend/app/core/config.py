@@ -40,6 +40,14 @@ class Settings(BaseSettings):
     INITIAL_ADMIN_EMAIL: str = "admin@example.com"
     INITIAL_ADMIN_PASSWORD: str = "ChangeMe123!"
 
+    # --- Media / fayl yuklash ---
+    MEDIA_ROOT: str = "media"
+    MEDIA_URL_PREFIX: str = "/media"
+    MAX_UPLOAD_MB: int = 5
+    ALLOWED_IMAGE_TYPES: list[str] = Field(
+        default_factory=lambda: ["image/jpeg", "image/png", "image/webp"]
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:
