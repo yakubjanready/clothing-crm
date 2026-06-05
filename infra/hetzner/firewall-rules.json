@@ -1,0 +1,29 @@
+[
+  {
+    "direction": "in",
+    "protocol": "tcp",
+    "port": "22",
+    "source_ips": ["195.158.9.110/32"],
+    "description": "SSH faqat admin IP (Claude Code host)"
+  },
+  {
+    "direction": "in",
+    "protocol": "tcp",
+    "port": "80",
+    "source_ips": ["0.0.0.0/0", "::/0"],
+    "description": "HTTP — hammaga ochiq (nginx reverse proxy)"
+  },
+  {
+    "direction": "in",
+    "protocol": "tcp",
+    "port": "443",
+    "source_ips": ["0.0.0.0/0", "::/0"],
+    "description": "HTTPS — hammaga ochiq (kelajakda TLS)"
+  },
+  {
+    "direction": "in",
+    "protocol": "icmp",
+    "source_ips": ["0.0.0.0/0", "::/0"],
+    "description": "ICMP ping — diagnostika uchun"
+  }
+]

@@ -1,0 +1,4 @@
+secrets/
+*.pem
+id_ed25519*
+*.token

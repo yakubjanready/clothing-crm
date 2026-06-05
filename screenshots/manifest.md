@@ -135,3 +135,13 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | cicd__faza16__02-stages-overview.png  | 16 | D.P8 | Pipeline strukturasi: `stage`, `image`, `services`, `extends`, `needs`, `rules`, `coverage`, `environment` qatorlari ko'rinadi |
 | cicd__faza16__03-cicd-variables.png   | 16 | D.P8 | GitLab CI/CD Variables ro'yxati: SSH_PRIVATE_KEY (File, Masked, Protected), SERVER_IP, DB_PASSWORD, JWT_SECRET, VITE_API_BASE_URL, VITE_SENTRY_DSN + GitLab auto registry vars |
 | cicd__faza16__04-deploy-flow.png      | 16 | D.P8 | Build → deploy oqimi: registry push, rsync compose+nginx, SSH `docker login` + `pull` + `up -d --no-build` + `alembic upgrade head` + `image prune` |
+
+## Faza 17 — Hetzner Cloud production deploy (real infra, BTEC M.P3/D.M2)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| cloud__faza17__01-hcloud-resources.png    | 17 | infra_iac | `hcloud {ssh-key,network,firewall,server} list` — yaratilgan resurslar: SSH key `crm-deploy` (113351723), Network `crm-vpc` 10.0.0.0/16 (12303662), Firewall `crm-fw` 4 qoida (11086775), Server `crm-app-01` CPX22 nbg1 138.199.218.108 (136912192) |
+| cloud__faza17__02-ssh-bootstrap.png       | 17 | infra_iac | SSH ulanish + cloud-init holati: hostname crm-app-01 x86_64, Docker 29.5.3, compose v5.1.4, UFW active (22/80/443), systemd: docker+netdata+fail2ban active, `/var/log/crm-bootstrap.log` |
+| cloud__faza17__03-stack-running.png       | 17 | prod_deploy | 8 ta Docker xizmat `Up (healthy)` (postgres, redis, backend, celery_worker, celery_beat, frontend, nginx, minio); tashqi smoke test 138.199.218.108: /healthz=ok, /=200, /docs=200 |
+| cloud__faza17__04-db-migrations.png       | 17 | prod_deploy | Alembic current: c1e9c4b3fdcb (notifications, eng oxirgi); history 12 ta migratsiya (auth_rbac→hr→catalog→warehouse→customer→sales→procurement→finance→notifications); PostgreSQL: 37 ta jadval |
+| cloud__faza17__05-monitoring-security.png | 17 | observability | Netdata v2.10.3 active+listening :19999 (Hetzner FW'da bloklangan, SSH tunnel only); sshd: PermitRootLogin=no, PasswordAuthentication=no, MaxAuthTries=3; fail2ban sshd jail active |
