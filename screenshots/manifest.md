@@ -118,3 +118,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | quality__faza14__02-backend-lint.png     | 14 | quality | ruff check (187 ta xato fix'landi) va black --check yashil |
 | quality__faza14__03-frontend-test.png    | 14 | quality | Frontend vitest (11 passed) + @vitest/coverage-v8 sozlanildi (stores 96.55%, schemas 100%, lib 100%) |
 | quality__faza14__04-frontend-lint.png    | 14 | quality | ESLint (typescript-eslint + react + react-hooks, flat config) va Prettier --check yashil |
+
+## Faza 15 — Production infra (Docker prod + Nginx + compose + Sentry + DB backup)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| prod__faza15__01-compose-config.png      | 15 | prod_infra | docker-compose.prod.yml — 8 ta xizmat (postgres+volume, redis, backend, celery_worker, celery_beat, frontend, nginx, minio) syntax+env validate |
+| prod__faza15__02-backend-image-build.png | 15 | prod_infra | Backend multi-stage build success: 245MB, non-root uid 1000 (app), gunicorn /home/app/.local/bin, Python 3.12 |
+| prod__faza15__03-nginx-validate.png      | 15 | prod_infra | Reverse proxy `nginx -t` syntax OK (locations: /api/, /api/v1/auth/(login\|refresh), /ws/, /media/, /; gzip, security headers, rate limit) |

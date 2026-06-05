@@ -48,6 +48,10 @@ class Settings(BaseSettings):
         default_factory=lambda: ["image/jpeg", "image/png", "image/webp"]
     )
 
+    # --- Sentry (bo'sh DSN → init bo'lmaydi) ---
+    SENTRY_DSN: str = ""
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.1
+
 
 @lru_cache
 def get_settings() -> Settings:

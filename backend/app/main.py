@@ -9,7 +9,12 @@ from app import __version__
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.redis import close_redis
+from app.core.sentry import init_sentry
 from app.db.session import dispose_engine
+
+# Sentry init create_app'dan oldin — Integrationlar future request'larni
+# ushlab olishi uchun.
+init_sentry()
 
 
 @asynccontextmanager

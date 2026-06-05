@@ -1,0 +1,166 @@
+# Production stack — 8 xizmat: postgres, redis, backend, celery_worker,
+# celery_beat, frontend, nginx, minio. Hetzner serverga deploy uchun:
+#   cp .env.prod.example .env.prod && nano .env.prod
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+#   docker compose -f docker-compose.prod.yml exec backend alembic upgrade head
+#   docker compose -f docker-compose.prod.yml exec backend python -m app.scripts.seed_rbac
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: crm-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [crm]
+
+  redis:
+    image: redis:7-alpine
+    container_name: crm-redis
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks: [crm]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: crm-backend:prod
+    container_name: crm-backend
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      # Prod connection stringlari .env.prod'dagi xost-nomlarni almashtirish
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+      WEB_CONCURRENCY: ${WEB_CONCURRENCY:-4}
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+    volumes:
+      - media:/app/media
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    networks: [crm]
+
+  celery_worker:
+    image: crm-backend:prod
+    container_name: crm-celery-worker
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      backend: { condition: service_started }
+      redis:   { condition: service_healthy }
+    command: ["celery", "-A", "app.tasks.celery_app", "worker", "--loglevel=info", "--concurrency=2"]
+    networks: [crm]
+
+  celery_beat:
+    image: crm-backend:prod
+    container_name: crm-celery-beat
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      CELERY_BROKER_URL: redis://redis:6379/1
+      CELERY_RESULT_BACKEND: redis://redis:6379/2
+    depends_on:
+      backend: { condition: service_started }
+      redis:   { condition: service_healthy }
+    command: ["celery", "-A", "app.tasks.celery_app", "beat", "--loglevel=info"]
+    networks: [crm]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""           # nginx reverse proxy bilan ishlaganda bo'sh
+        VITE_API_V1_PREFIX: /api/v1
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+    image: crm-frontend:prod
+    container_name: crm-frontend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks: [crm]
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: crm-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      # HTTPS qo'shilganda:
+      # - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # - ./nginx/certs:/etc/nginx/certs:ro  # TLS sertifikatlari uchun keyin
+    depends_on:
+      backend:  { condition: service_started }
+      frontend: { condition: service_started }
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    networks: [crm]
+
+  minio:
+    image: minio/minio:latest
+    container_name: crm-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER:     ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: ["server", "/data", "--console-address", ":9001"]
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"      # S3 API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"  # Veb-konsol
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks: [crm]
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
+  media:
+
+networks:
+  crm:
+    driver: bridge
