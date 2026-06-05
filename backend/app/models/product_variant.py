@@ -42,6 +42,10 @@ class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin)
     barcode: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
+    cost_price: Mapped[Decimal] = mapped_column(
+        Numeric(14, 2), nullable=False, default=Decimal("0"),
+        server_default=text("0"),
+    )
     wholesale_price: Mapped[Decimal] = mapped_column(
         Numeric(14, 2), nullable=False, default=Decimal("0")
     )

@@ -41,6 +41,9 @@ PERMISSIONS: list[tuple[str, str]] = [
     ("order:approve",   "Buyurtmani tasdiqlash"),
     ("warehouse:read",  "Omborni ko'rish"),
     ("warehouse:write", "Ombor amallari (kirim/chiqim)"),
+    ("purchase:read",   "Ta'minotchi va PO ni ko'rish"),
+    ("purchase:write",  "Ta'minotchi va PO yaratish/tahrirlash"),
+    ("purchase:approve","PO receive (qabul) va pay (to'lov)"),
     ("accounting:read", "Hisob-kitobni ko'rish"),
     ("accounting:write","Hisob-kitob yozish"),
     ("report:read",     "Hisobotlarni ko'rish"),
@@ -60,6 +63,7 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "order:read", "order:approve",
         "warehouse:read", "accounting:read", "report:read",
         "hr:read", "audit:read",
+        "purchase:read",
     ],
     RoleName.MANAGER: [
         "customer:read", "customer:write",
@@ -67,6 +71,7 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "order:read", "order:write", "order:approve",
         "warehouse:read", "report:read",
         "hr:read", "hr:write",
+        "purchase:read", "purchase:write",
     ],
     RoleName.SALES: [
         "customer:read", "customer:write",
@@ -77,6 +82,7 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
         "warehouse:read", "warehouse:write",
         "product:read", "product:write",
         "order:read",
+        "purchase:read", "purchase:write", "purchase:approve",
     ],
     # ESLATMA: product:delete faqat admin'da (default ALL ichida)
     RoleName.ACCOUNTANT: [

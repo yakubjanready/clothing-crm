@@ -15,6 +15,10 @@ from app.models.order import Order, OrderStatus
 from app.models.order_item import OrderItem
 from app.models.order_return import Return, ReturnItem, ReturnStatus
 from app.models.payment import Payment, PaymentMethod
+from app.models.purchase_item import PurchaseItem
+from app.models.purchase_order import PurchaseOrder, PurchaseOrderStatus
+from app.models.supplier import Supplier
+from app.models.supplier_payment import SupplierPayment
 from app.models.employee import Employee, EmployeeStatus
 from app.models.inventory import Inventory, InventoryItem, InventoryStatus
 from app.models.permission import Permission
@@ -38,6 +42,8 @@ __all__ = [
     "Invoice", "InvoiceStatus",
     "Order", "OrderItem", "OrderStatus",
     "Payment", "PaymentMethod",
+    "PurchaseItem", "PurchaseOrder", "PurchaseOrderStatus",
+    "Supplier", "SupplierPayment",
     "Return", "ReturnItem", "ReturnStatus",
     "Employee", "EmployeeStatus",
     "Gender",

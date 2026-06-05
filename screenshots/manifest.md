@@ -69,3 +69,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | sales__faza8__01-pytest-green.png       | 8 | sales | 152 ta test yashil (sales 40: state machine pure 14, create draft+confirm+pay+ship+cancel+return+invoice e2e) |
 | sales__faza8__02-alembic-migrations.png | 8 | sales | Alembic: customer → sales_module; orders/order_items/payments/invoices/returns/return_items |
 | sales__faza8__03-db-tables.png          | 8 | sales | Real Postgres: 29 jadval, orders CHECK constraintlari + CASCADE FK (items/payments/invoices) va RESTRICT (returns, customer, warehouse) |
+
+## Faza 9 — Ta'minot (Supplier/PurchaseOrder/PurchaseItem/SupplierPayment)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| procurement__faza9__01-pytest-green.png       | 9 | procurement | 174 ta test yashil (procurement 22: state machine 7, supplier CRUD 4, PO create+receive (stock+cost+debt) 4, pay 4, cancel+balance 3) |
+| procurement__faza9__02-alembic-migrations.png | 9 | procurement | Alembic: sales → procurement_module; suppliers/purchase_orders/purchase_items/supplier_payments + ProductVariant.cost_price ustuni |
+| procurement__faza9__03-db-tables.png          | 9 | procurement | Real Postgres: 33 jadval, suppliers CHECK (debt>=0, rating 0-5), product_variants.cost_price ustuni qo'shildi |
