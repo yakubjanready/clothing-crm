@@ -21,8 +21,10 @@ from app.schemas.order import (
     OrderUpdate,
 )
 from app.schemas.payment import PaymentCreate, PaymentRead
+from app.models.notification import NotificationSeverity, NotificationType
 from app.services.audit import log_activity
 from app.services.customer import CreditLimitExceededError
+from app.services.notify import notify
 from app.services.order import (
     InsufficientStockError,
     InvalidMovementError,
@@ -155,6 +157,13 @@ async def create_order(
         changes={"number": order.number, "total": str(order.total)},
         request=request,
     )
+    await notify(
+        db,
+        type_=NotificationType.NEW_ORDER,
+        title=f"Yangi buyurtma {order.number}",
+        message=f"Mijoz uchun {order.total} so'mlik buyurtma yaratildi",
+        data={"order_id": str(order.id), "total": str(order.total)},
+    )
     try:
         await db.commit()
     except IntegrityError as e:
@@ -241,6 +250,14 @@ async def confirm(
         changes={"transition": f"draft->confirmed", "total": str(o.total)},
         request=request,
     )
+    await notify(
+        db,
+        type_=NotificationType.ORDER_CONFIRMED,
+        severity=NotificationSeverity.INFO,
+        title=f"Buyurtma tasdiqlandi {o.number}",
+        message=f"Total: {o.total}. Mahsulot rezerv qilindi.",
+        data={"order_id": str(o.id)},
+    )
     await db.commit()
     fresh = await _reload_with_items(db, o.id)
     return OrderRead.model_validate(fresh)
@@ -268,6 +285,13 @@ async def pay(
         entity_type=ENTITY, entity_id=order.id,
         changes={"payment_amount": str(body.amount), "new_status": order.status},
         request=request,
+    )
+    await notify(
+        db,
+        type_=NotificationType.PAYMENT_RECEIVED,
+        title=f"To'lov qabul qilindi {order.number}",
+        message=f"Summa: {body.amount}, usul: {body.method}. Yangi status: {order.status}",
+        data={"order_id": str(order.id), "amount": str(body.amount)},
     )
     await db.commit()
     await db.refresh(payment)

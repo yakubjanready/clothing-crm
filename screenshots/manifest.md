@@ -85,3 +85,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | finance__faza10__01-pytest-green.png       | 10 | finance | 190 ta test yashil (finance 16: account CRUD 5, income/expense+insufficient 4, transfer atomik 3, debts auto-write 3, list filter 1) |
 | finance__faza10__02-alembic-migrations.png | 10 | finance | Alembic: procurement → finance_module; accounts/finance_payments/debt_records |
 | finance__faza10__03-db-tables.png          | 10 | finance | Real Postgres: 36 jadval, accounts CHECK (balance>=0), finance_payments CHECK (amount>0), debt_records ledger jadvali |
+
+## Faza 11 — Notifikatsiyalar (Notification + WebSocket + Redis Pub/Sub)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| notify__faza11__01-pytest-green.png       | 11 | notification | 202 ta test yashil (notification 12: notify() service 3, WS auth 3, REST 5, auto-trigger 1) |
+| notify__faza11__02-alembic-migrations.png | 11 | notification | Alembic: finance → notifications; user_id FK CASCADE |
+| notify__faza11__03-db-tables.png          | 11 | notification | Real Postgres: 37 jadval, notifications table (type/severity index, read_at index, data JSON) |

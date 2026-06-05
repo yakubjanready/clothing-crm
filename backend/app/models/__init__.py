@@ -13,6 +13,11 @@ from app.models.finance_payment import (
     FinancePayment,
     PaymentDirection,
 )
+from app.models.notification import (
+    Notification,
+    NotificationSeverity,
+    NotificationType,
+)
 from app.models.customer import Customer, CustomerSegment, PriceType
 from app.models.customer_contact import CustomerContact
 from app.models.customer_interaction import CustomerInteraction, InteractionType
@@ -42,6 +47,7 @@ __all__ = [
     "Account", "AccountType",
     "FinancePayment", "PaymentDirection", "FinanceCategory",
     "DebtRecord", "DebtPartyType", "DebtDirection",
+    "Notification", "NotificationType", "NotificationSeverity",
     "ActivityLog", "AuditAction",
     "AttributeValue",
     "Brand",

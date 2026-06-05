@@ -52,3 +52,26 @@ def generate_invoice_pdf(invoice_id: str) -> str:
     pdf_url = f"/media/invoices/{invoice_id}.pdf"
     print(f"[INVOICE PDF] generated stub: {pdf_url}")
     return pdf_url
+
+
+@celery_app.task(name="send_email_notification")
+def send_email_notification(notification_id: str) -> str:
+    """Notifikatsiyani email orqali yuboradi (stub).
+
+    Real implementatsiyada: SMTP yoki SendGrid/SES orqali jo'natiladi.
+    Task tugagach DB'dagi notification.sent_via_email yangilanadi.
+    """
+    msg = f"[EMAIL] notification={notification_id} sent (stub)"
+    print(msg)
+    return msg
+
+
+@celery_app.task(name="send_telegram_notification")
+def send_telegram_notification(notification_id: str) -> str:
+    """Notifikatsiyani Telegram orqali yuboradi (stub).
+
+    Real implementatsiyada: Bot API orqali user'ning chat_id'siga jo'natiladi.
+    """
+    msg = f"[TELEGRAM] notification={notification_id} sent (stub)"
+    print(msg)
+    return msg

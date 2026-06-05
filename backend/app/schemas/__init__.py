@@ -109,6 +109,11 @@ from app.schemas.finance_payment import (
     TransferRequest,
     TransferResponse,
 )
+from app.schemas.notification import (
+    NotificationCreate,
+    NotificationRead,
+    UnreadCount,
+)
 from app.schemas.warehouse import WarehouseCreate, WarehouseRead, WarehouseUpdate
 
 __all__ = [
@@ -146,4 +151,5 @@ __all__ = [
     "FinancePaymentCreate", "FinancePaymentRead",
     "TransferRequest", "TransferResponse",
     "DebtRecordRead",
+    "NotificationCreate", "NotificationRead", "UnreadCount",
 ]
