@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 from app.api.deps import require_permission
 from app.db.session import get_db
 from app.models.activity_log import AuditAction
+from app.models.notification import NotificationSeverity, NotificationType
 from app.models.order import Order, OrderStatus
 from app.models.user import User
 from app.schemas.invoice import InvoiceRead
@@ -21,7 +22,6 @@ from app.schemas.order import (
     OrderUpdate,
 )
 from app.schemas.payment import PaymentCreate, PaymentRead
-from app.models.notification import NotificationSeverity, NotificationType
 from app.services.audit import log_activity
 from app.services.customer import CreditLimitExceededError
 from app.services.notify import notify
@@ -74,14 +74,13 @@ async def _reload_with_items(db: AsyncSession, order_id: uuid.UUID) -> Order:
     (yangi obyektlarda `lazy=selectin` strategiyasi ishlamaydi)."""
     return (
         await db.execute(
-            select(Order)
-            .where(Order.id == order_id)
-            .options(selectinload(Order.items))
+            select(Order).where(Order.id == order_id).options(selectinload(Order.items))
         )
     ).scalar_one()
 
 
 # ---- CRUD ----
+
 
 @router.get("", response_model=Page[OrderRead])
 async def list_orders(
@@ -95,11 +94,7 @@ async def list_orders(
     search: str | None = Query(default=None, max_length=64),
     include_deleted: bool = Query(default=False),
 ) -> Page[OrderRead]:
-    stmt = (
-        select(Order)
-        .options(selectinload(Order.items))
-        .order_by(Order.created_at.desc())
-    )
+    stmt = select(Order).options(selectinload(Order.items)).order_by(Order.created_at.desc())
     if not include_deleted:
         stmt = stmt.where(Order.deleted_at.is_(None))
     if status_ is not None:
@@ -116,7 +111,10 @@ async def list_orders(
     items, total, pages = await paginate(db, stmt, params)
     return Page[OrderRead](
         items=[OrderRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -152,8 +150,11 @@ async def create_order(
         _raise_service_error(e)
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=order.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=order.id,
         changes={"number": order.number, "total": str(order.total)},
         request=request,
     )
@@ -188,21 +189,27 @@ async def update_order(
     patch = body.model_dump(exclude_unset=True)
     if "items" in patch and patch["items"] is not None:
         try:
-            await replace_items(db, order=o, items_data=patch["items"], discount=patch.get("discount"))
+            await replace_items(
+                db, order=o, items_data=patch["items"], discount=patch.get("discount")
+            )
         except (OrderValidationError, InvalidOrderTransitionError) as e:
             await db.rollback()
             _raise_service_error(e)
     elif "discount" in patch and patch["discount"] is not None:
         o.discount = patch["discount"]
         from app.services.order import _recalculate_totals
+
         _recalculate_totals(o)
     for f in ("notes", "manager_id"):
         if f in patch:
             setattr(o, f, patch[f])
 
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=o.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=o.id,
         changes={"keys": list(patch.keys())},
         request=request,
     )
@@ -223,13 +230,18 @@ async def soft_delete_order(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Faqat DRAFT o'chiriladi")
     o.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=o.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=o.id,
+        request=request,
     )
     await db.commit()
 
 
 # ---- State actions ----
+
 
 @router.post("/{order_id}/confirm", response_model=OrderRead)
 async def confirm(
@@ -245,9 +257,12 @@ async def confirm(
         await db.rollback()
         _raise_service_error(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=o.id,
-        changes={"transition": f"draft->confirmed", "total": str(o.total)},
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=o.id,
+        changes={"transition": "draft->confirmed", "total": str(o.total)},
         request=request,
     )
     await notify(
@@ -274,15 +289,22 @@ async def pay(
     o = await _get_order_or_404(db, order_id)
     try:
         order, payment = await pay_order(
-            db, order=o, amount=body.amount, method=body.method,
-            actor=actor, notes=body.notes,
+            db,
+            order=o,
+            amount=body.amount,
+            method=body.method,
+            actor=actor,
+            notes=body.notes,
         )
     except Exception as e:
         await db.rollback()
         _raise_service_error(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=order.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=order.id,
         changes={"payment_amount": str(body.amount), "new_status": order.status},
         request=request,
     )
@@ -312,8 +334,11 @@ async def ship(
         await db.rollback()
         _raise_service_error(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=o.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=o.id,
         changes={"transition": f"->{o.status}"},
         request=request,
     )
@@ -337,8 +362,11 @@ async def cancel(
         await db.rollback()
         _raise_service_error(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=o.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=o.id,
         changes={"transition": "->cancelled", "reason": body.reason},
         request=request,
     )
@@ -348,6 +376,7 @@ async def cancel(
 
 
 # ---- Invoice yaratish ----
+
 
 @router.post(
     "/{order_id}/invoices",
@@ -367,8 +396,11 @@ async def create_invoice_for_order(
         await db.rollback()
         _raise_service_error(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type="invoice", entity_id=inv.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type="invoice",
+        entity_id=inv.id,
         changes={"order_number": o.number, "total": str(inv.total)},
         request=request,
     )
@@ -378,7 +410,7 @@ async def create_invoice_for_order(
     # Celery PDF task (broker bo'lmasa silently — invoice yozuvi qoladi)
     try:
         celery_app.send_task("generate_invoice_pdf", args=[str(inv.id)])
-    except Exception:  # noqa: BLE001
+    except Exception:
         pass
 
     return InvoiceRead.model_validate(inv)

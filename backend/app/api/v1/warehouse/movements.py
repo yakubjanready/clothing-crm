@@ -47,9 +47,7 @@ async def list_movements(
     params: PageParams = Depends(page_params),
     type_: MovementType | None = Query(default=None, alias="type"),
     variant_id: uuid.UUID | None = Query(default=None),
-    warehouse_id: uuid.UUID | None = Query(
-        default=None, description="from yoki to ombor"
-    ),
+    warehouse_id: uuid.UUID | None = Query(default=None, description="from yoki to ombor"),
     actor_id: uuid.UUID | None = Query(default=None),
 ) -> Page[StockMovementRead]:
     stmt = select(StockMovement).order_by(StockMovement.created_at.desc())
@@ -68,7 +66,10 @@ async def list_movements(
     items, total, pages = await paginate(db, stmt, params)
     return Page[StockMovementRead](
         items=[StockMovementRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 

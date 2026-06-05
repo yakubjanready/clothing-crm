@@ -27,9 +27,7 @@ export function ImageDropzone({ value, onChange }: ImageDropzoneProps) {
       if (accepted.length === 0) return;
       setUploading(true);
       try {
-        const results = await Promise.all(
-          accepted.map((f) => upload.mutateAsync(f)),
-        );
+        const results = await Promise.all(accepted.map((f) => upload.mutateAsync(f)));
         onChange([...value, ...results.map((r) => r.url)]);
         toast.success(`${results.length} ${t("products.fields.images").toLowerCase()}`);
       } catch {
@@ -66,9 +64,7 @@ export function ImageDropzone({ value, onChange }: ImageDropzoneProps) {
       >
         <input {...getInputProps()} />
         <ImagePlus className="h-5 w-5 text-muted-foreground" />
-        <span>
-          {uploading ? t("common.loading") : t("products.drop_images")}
-        </span>
+        <span>{uploading ? t("common.loading") : t("products.drop_images")}</span>
       </div>
 
       {value.length > 0 && (
@@ -78,11 +74,7 @@ export function ImageDropzone({ value, onChange }: ImageDropzoneProps) {
               key={`${url}-${i}`}
               className="group relative aspect-square overflow-hidden rounded-md border bg-muted"
             >
-              <img
-                src={fullUrl(url)}
-                alt=""
-                className="h-full w-full object-cover"
-              />
+              <img src={fullUrl(url)} alt="" className="h-full w-full object-cover" />
               <Button
                 type="button"
                 variant="destructive"

@@ -1,4 +1,5 @@
 """/auth/* endpointlari uchun integratsion testlar (aiosqlite + fakeredis)."""
+
 from __future__ import annotations
 
 from httpx import AsyncClient
@@ -6,12 +7,10 @@ from httpx import AsyncClient
 from app.models.role import RoleName
 from app.models.user import User
 
-
 # ---- login ----
 
-async def test_login_success_returns_token_pair(
-    client: AsyncClient, admin_user: User
-) -> None:
+
+async def test_login_success_returns_token_pair(client: AsyncClient, admin_user: User) -> None:
     resp = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
@@ -24,9 +23,7 @@ async def test_login_success_returns_token_pair(
     assert body["access_token"] != body["refresh_token"]
 
 
-async def test_login_wrong_password_401(
-    client: AsyncClient, admin_user: User
-) -> None:
+async def test_login_wrong_password_401(client: AsyncClient, admin_user: User) -> None:
     resp = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "wrong"},
@@ -42,9 +39,7 @@ async def test_login_unknown_email_401(client: AsyncClient) -> None:
     assert resp.status_code == 401
 
 
-async def test_login_inactive_user_401(
-    client: AsyncClient, admin_user: User, test_db
-) -> None:
+async def test_login_inactive_user_401(client: AsyncClient, admin_user: User, test_db) -> None:
     admin_user.is_active = False
     await test_db.commit()
     resp = await client.post(
@@ -56,17 +51,14 @@ async def test_login_inactive_user_401(
 
 # ---- /me ----
 
-async def test_me_returns_current_user(
-    client: AsyncClient, admin_user: User
-) -> None:
+
+async def test_me_returns_current_user(client: AsyncClient, admin_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
     )
     access = login.json()["access_token"]
-    resp = await client.get(
-        "/api/v1/auth/me", headers={"Authorization": f"Bearer {access}"}
-    )
+    resp = await client.get("/api/v1/auth/me", headers={"Authorization": f"Bearer {access}"})
     assert resp.status_code == 200
     me = resp.json()
     assert me["email"] == "admin@example.com"
@@ -80,56 +72,44 @@ async def test_me_without_token_401(client: AsyncClient) -> None:
 
 
 async def test_me_with_invalid_token_401(client: AsyncClient) -> None:
-    resp = await client.get(
-        "/api/v1/auth/me", headers={"Authorization": "Bearer not.a.jwt"}
-    )
+    resp = await client.get("/api/v1/auth/me", headers={"Authorization": "Bearer not.a.jwt"})
     assert resp.status_code == 401
 
 
 # ---- refresh rotation ----
 
-async def test_refresh_rotates_and_invalidates_old(
-    client: AsyncClient, admin_user: User
-) -> None:
+
+async def test_refresh_rotates_and_invalidates_old(client: AsyncClient, admin_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
     )
     refresh_1 = login.json()["refresh_token"]
 
-    r1 = await client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": refresh_1}
-    )
+    r1 = await client.post("/api/v1/auth/refresh", json={"refresh_token": refresh_1})
     assert r1.status_code == 200, r1.text
     refresh_2 = r1.json()["refresh_token"]
     assert refresh_2 != refresh_1
 
     # Eski refresh endi yaroqsiz
-    r2 = await client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": refresh_1}
-    )
+    r2 = await client.post("/api/v1/auth/refresh", json={"refresh_token": refresh_1})
     assert r2.status_code == 401
 
 
-async def test_refresh_with_access_token_rejected(
-    client: AsyncClient, admin_user: User
-) -> None:
+async def test_refresh_with_access_token_rejected(client: AsyncClient, admin_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
     )
     access = login.json()["access_token"]
-    resp = await client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": access}
-    )
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": access})
     assert resp.status_code == 401
 
 
 # ---- logout ----
 
-async def test_logout_revokes_all_refresh_tokens(
-    client: AsyncClient, admin_user: User
-) -> None:
+
+async def test_logout_revokes_all_refresh_tokens(client: AsyncClient, admin_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
@@ -137,23 +117,18 @@ async def test_logout_revokes_all_refresh_tokens(
     access = login.json()["access_token"]
     refresh = login.json()["refresh_token"]
 
-    logout = await client.post(
-        "/api/v1/auth/logout", headers={"Authorization": f"Bearer {access}"}
-    )
+    logout = await client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {access}"})
     assert logout.status_code == 204
 
     # Logout'dan keyin refresh ham bekor qilingan
-    resp = await client.post(
-        "/api/v1/auth/refresh", json={"refresh_token": refresh}
-    )
+    resp = await client.post("/api/v1/auth/refresh", json={"refresh_token": refresh})
     assert resp.status_code == 401
 
 
 # ---- register (admin only) ----
 
-async def test_register_as_admin_creates_user(
-    client: AsyncClient, admin_user: User
-) -> None:
+
+async def test_register_as_admin_creates_user(client: AsyncClient, admin_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
@@ -176,9 +151,7 @@ async def test_register_as_admin_creates_user(
     assert new_user["roles"] == []
 
 
-async def test_register_as_sales_forbidden(
-    client: AsyncClient, sales_user: User
-) -> None:
+async def test_register_as_sales_forbidden(client: AsyncClient, sales_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "sales@example.com", "password": "SalesPass123!"},
@@ -198,9 +171,7 @@ async def test_register_as_sales_forbidden(
     assert "user:write" in resp.json()["detail"]
 
 
-async def test_register_duplicate_email_409(
-    client: AsyncClient, admin_user: User
-) -> None:
+async def test_register_duplicate_email_409(client: AsyncClient, admin_user: User) -> None:
     login = await client.post(
         "/api/v1/auth/login",
         json={"email": "admin@example.com", "password": "AdminPass123!"},
@@ -224,5 +195,3 @@ async def test_register_duplicate_email_409(
         json=payload,
     )
     assert second.status_code == 409
-
-

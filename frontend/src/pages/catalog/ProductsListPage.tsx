@@ -5,11 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 import { useBrandsList, useCategoriesList } from "@/api/catalog";
-import {
-  useDeleteProduct,
-  useProductsList,
-  type ProductsListParams,
-} from "@/api/products";
+import { useDeleteProduct, useProductsList, type ProductsListParams } from "@/api/products";
 import type { Gender, Product } from "@/api/types";
 import { ConfirmDialog } from "@/components/common/ConfirmDialog";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -61,11 +57,7 @@ export function ProductsListPage() {
       className: "w-12",
       render: (p) =>
         p.images?.[0] ? (
-          <img
-            src={p.images[0]}
-            alt=""
-            className="h-9 w-9 rounded object-cover"
-          />
+          <img src={p.images[0]} alt="" className="h-9 w-9 rounded object-cover" />
         ) : (
           <div className="h-9 w-9 rounded bg-muted" />
         ),
@@ -75,10 +67,7 @@ export function ProductsListPage() {
       key: "name",
       header: t("products.fields.name"),
       render: (p) => (
-        <Link
-          to={`/catalog/products/${p.id}`}
-          className="font-medium hover:underline"
-        >
+        <Link to={`/catalog/products/${p.id}`} className="font-medium hover:underline">
           {p.name}
         </Link>
       ),
@@ -86,19 +75,12 @@ export function ProductsListPage() {
     {
       key: "gender",
       header: t("products.fields.gender"),
-      render: (p) => (
-        <Badge variant="secondary">{t(`products.gender.${p.gender}`)}</Badge>
-      ),
+      render: (p) => <Badge variant="secondary">{t(`products.gender.${p.gender}`)}</Badge>,
     },
     {
       key: "is_active",
       header: t("products.fields.is_active"),
-      render: (p) =>
-        p.is_active ? (
-          <Badge>✓</Badge>
-        ) : (
-          <Badge variant="outline">—</Badge>
-        ),
+      render: (p) => (p.is_active ? <Badge>✓</Badge> : <Badge variant="outline">—</Badge>),
     },
     {
       key: "actions",
@@ -116,12 +98,7 @@ export function ProductsListPage() {
               <Pencil className="h-4 w-4" />
             </Link>
           </Button>
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={() => setToDelete(p)}
-            aria-label="delete"
-          >
+          <Button size="icon" variant="ghost" onClick={() => setToDelete(p)} aria-label="delete">
             <Trash2 className="h-4 w-4 text-destructive" />
           </Button>
         </div>
@@ -151,9 +128,7 @@ export function ProductsListPage() {
           />
           <Select
             value={params.gender ?? ALL_VALUE}
-            onValueChange={(v) =>
-              setFilter("gender", v === ALL_VALUE ? undefined : (v as Gender))
-            }
+            onValueChange={(v) => setFilter("gender", v === ALL_VALUE ? undefined : (v as Gender))}
           >
             <SelectTrigger>
               <SelectValue placeholder={t("products.filter_gender")} />
@@ -169,9 +144,7 @@ export function ProductsListPage() {
           </Select>
           <Select
             value={params.category_id ?? ALL_VALUE}
-            onValueChange={(v) =>
-              setFilter("category_id", v === ALL_VALUE ? undefined : v)
-            }
+            onValueChange={(v) => setFilter("category_id", v === ALL_VALUE ? undefined : v)}
           >
             <SelectTrigger>
               <SelectValue placeholder={t("products.filter_category")} />
@@ -187,9 +160,7 @@ export function ProductsListPage() {
           </Select>
           <Select
             value={params.brand_id ?? ALL_VALUE}
-            onValueChange={(v) =>
-              setFilter("brand_id", v === ALL_VALUE ? undefined : v)
-            }
+            onValueChange={(v) => setFilter("brand_id", v === ALL_VALUE ? undefined : v)}
           >
             <SelectTrigger>
               <SelectValue placeholder={t("products.filter_brand")} />
@@ -209,9 +180,7 @@ export function ProductsListPage() {
       {isLoading ? (
         <LoadingSpinner />
       ) : isError ? (
-        <Card className="p-8 text-center text-sm text-destructive">
-          {t("common.error")}
-        </Card>
+        <Card className="p-8 text-center text-sm text-destructive">{t("common.error")}</Card>
       ) : (
         <>
           <DataTable

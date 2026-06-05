@@ -37,8 +37,8 @@ class PurchaseItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     unit_cost: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     line_total: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
 
-    purchase_order: Mapped["PurchaseOrder"] = relationship(back_populates="items")
-    variant: Mapped["ProductVariant"] = relationship()
+    purchase_order: Mapped[PurchaseOrder] = relationship(back_populates="items")
+    variant: Mapped[ProductVariant] = relationship()
 
     def __repr__(self) -> str:
         return f"<PurchaseItem variant={self.variant_id} qty={self.quantity}>"

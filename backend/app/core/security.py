@@ -1,8 +1,9 @@
 """Parol xeshlash (bcrypt) va JWT (access/refresh) yordamchilari."""
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
 import bcrypt
@@ -19,6 +20,7 @@ class InvalidTokenError(Exception):
 
 # ---- Parol ----
 
+
 def hash_password(plain: str) -> str:
     return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
@@ -32,13 +34,14 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 # ---- JWT ----
 
+
 def _create_token(
     subject: str,
     token_type: TokenType,
     expires_delta: timedelta,
 ) -> tuple[str, str, datetime]:
     """Tokenni yaratadi va (jwt, jti, expires_at) qaytaradi."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expire = now + expires_delta
     jti = str(uuid.uuid4())
     payload: dict[str, Any] = {
@@ -53,29 +56,21 @@ def _create_token(
 
 
 def create_access_token(subject: str) -> tuple[str, str, datetime]:
-    return _create_token(
-        subject, "access", timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
+    return _create_token(subject, "access", timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
 
 
 def create_refresh_token(subject: str) -> tuple[str, str, datetime]:
-    return _create_token(
-        subject, "refresh", timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    )
+    return _create_token(subject, "refresh", timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS))
 
 
 def decode_token(token: str, expected_type: TokenType) -> dict[str, Any]:
     try:
-        payload = jwt.decode(
-            token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
-        )
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
     except jwt.PyJWTError as e:
         raise InvalidTokenError(str(e)) from e
 
     if payload.get("type") != expected_type:
-        raise InvalidTokenError(
-            f"expected {expected_type} token, got {payload.get('type')!r}"
-        )
+        raise InvalidTokenError(f"expected {expected_type} token, got {payload.get('type')!r}")
     if "sub" not in payload or "jti" not in payload:
         raise InvalidTokenError("token missing required claims (sub, jti)")
     return payload

@@ -30,7 +30,7 @@ class CustomerContact(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin
     )
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
-    customer: Mapped["Customer"] = relationship(back_populates="contacts")
+    customer: Mapped[Customer] = relationship(back_populates="contacts")
 
     def __repr__(self) -> str:
         return f"<CustomerContact {self.full_name}>"

@@ -141,9 +141,17 @@ async def update_employee(
     )
 
     allowed = {
-        "first_name", "last_name", "email", "phone", "photo_url",
-        "status", "hire_date", "termination_date",
-        "department_id", "position_id", "user_id",
+        "first_name",
+        "last_name",
+        "email",
+        "phone",
+        "photo_url",
+        "status",
+        "hire_date",
+        "termination_date",
+        "department_id",
+        "position_id",
+        "user_id",
     }
     changes = diff_attrs(emp, patch, allowed)
     for field, val in patch.items():

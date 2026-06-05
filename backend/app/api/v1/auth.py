@@ -1,4 +1,5 @@
 """Auth endpointlari: login, refresh (rotation), logout, me, register."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -42,6 +43,7 @@ def _refresh_ttl_seconds() -> int:
 
 # ---- POST /auth/login ----
 
+
 @router.post("/login", response_model=TokenPair)
 async def login(
     body: LoginRequest,
@@ -68,13 +70,12 @@ async def login(
     access_token, _, _ = create_access_token(str(user.id))
     refresh_token, rjti, _ = create_refresh_token(str(user.id))
 
-    await redis.set(
-        _refresh_key(str(user.id), rjti), "1", ex=_refresh_ttl_seconds()
-    )
+    await redis.set(_refresh_key(str(user.id), rjti), "1", ex=_refresh_ttl_seconds())
     return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
 
 # ---- POST /auth/refresh (rotation) ----
+
 
 @router.post("/refresh", response_model=TokenPair)
 async def refresh(
@@ -103,13 +104,12 @@ async def refresh(
     await redis.delete(old_key)
     access_token, _, _ = create_access_token(user_id)
     new_refresh, new_jti, _ = create_refresh_token(user_id)
-    await redis.set(
-        _refresh_key(user_id, new_jti), "1", ex=_refresh_ttl_seconds()
-    )
+    await redis.set(_refresh_key(user_id, new_jti), "1", ex=_refresh_ttl_seconds())
     return TokenPair(access_token=access_token, refresh_token=new_refresh)
 
 
 # ---- POST /auth/logout ----
+
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(
@@ -129,12 +129,14 @@ async def logout(
 
 # ---- GET /auth/me ----
 
+
 @router.get("/me", response_model=UserRead)
 async def me(user: User = Depends(get_current_user)) -> UserRead:
     return UserRead.model_validate(user)
 
 
 # ---- POST /auth/register (admin: user:write) ----
+
 
 @router.post(
     "/register",
@@ -162,9 +164,7 @@ async def register(
 
     if body.role_ids:
         roles_result = await db.execute(
-            select(Role)
-            .where(Role.id.in_(body.role_ids))
-            .options(selectinload(Role.permissions))
+            select(Role).where(Role.id.in_(body.role_ids)).options(selectinload(Role.permissions))
         )
         roles = list(roles_result.scalars())
         if len(roles) != len(set(body.role_ids)):

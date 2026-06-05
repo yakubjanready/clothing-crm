@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
@@ -61,7 +61,10 @@ async def list_interactions(
     items, total, pages = await paginate(db, stmt, params)
     return Page[CustomerInteractionRead](
         items=[CustomerInteractionRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -85,18 +88,22 @@ async def add_interaction(
         type=body.type,
         subject=body.subject,
         notes=body.notes,
-        occurred_at=body.occurred_at or datetime.now(timezone.utc),
+        occurred_at=body.occurred_at or datetime.now(UTC),
         follow_up_at=body.follow_up_at,
     )
     db.add(interaction)
     await db.flush()
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=interaction.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=interaction.id,
         changes={
             "customer_id": str(customer_id),
-            "type": body.type, "subject": body.subject,
+            "type": body.type,
+            "subject": body.subject,
         },
         request=request,
     )

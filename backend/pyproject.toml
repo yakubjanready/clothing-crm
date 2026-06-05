@@ -24,7 +24,10 @@ dependencies = [
 dev = [
     "pytest>=8.2",
     "pytest-asyncio>=0.23",
+    "pytest-cov>=5.0",
     "ruff>=0.5",
+    "black>=24.10",
+    "mypy>=1.13",
     "aiosqlite>=0.20",
     "fakeredis>=2.25",
 ]
@@ -37,11 +40,91 @@ build-backend = "setuptools.build_meta"
 where = ["."]
 include = ["app*"]
 
+# ---- pytest ----
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = "-q"
 
+# ---- coverage ----
+[tool.coverage.run]
+branch = true
+source = ["app"]
+concurrency = ["thread", "greenlet"]   # SQLAlchemy async + asyncpg uchun
+omit = [
+    "app/scripts/*",          # one-shot CLI seed
+    "app/tasks/celery_app.py", # Celery worker entry (mock'lar bilan testlanadi)
+    "app/main.py",             # ASGI bootstrap
+    "app/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+    "\\.\\.\\.",
+]
+show_missing = true
+skip_covered = false
+precision = 1
+fail_under = 80
+
+# ---- ruff (lint + format + isort) ----
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle + pyflakes
+    "I",             # isort
+    "UP",            # pyupgrade
+    "B",             # bugbear
+    "C4",            # comprehensions
+    "SIM",           # simplify
+    "RUF",           # ruff-specific
+]
+ignore = [
+    "E501",   # line too long — black/ruff format hal qiladi
+    "B008",   # function call in default (FastAPI Depends pattern)
+    "RUF001", # ambiguous unicode (uz/ru xabarlardagi ' va ʼ)
+    "RUF002", # docstring ichida ham
+    "RUF003", # comment ichida ham
+    "RUF012", # mutable class attrs in models (SQLAlchemy)
+    "SIM105", # try/except/pass — best-effort cleanup pattern uchun OK
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B011", "SIM117", "E741"]
+"alembic/env.py" = ["E402"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+# ---- black ----
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+extend-exclude = "alembic/versions"
+
+# ---- mypy ----
+[tool.mypy]
+python_version = "3.11"
+strict_optional = true
+warn_return_any = false
+warn_unused_ignores = true
+ignore_missing_imports = true
+exclude = [
+    "alembic/versions",
+    "build/",
+    "dist/",
+]
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+check_untyped_defs = false

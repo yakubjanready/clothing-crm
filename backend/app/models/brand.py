@@ -20,7 +20,7 @@ class Brand(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     country: Mapped[str | None] = mapped_column(String(64), nullable=True)
     logo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
-    products: Mapped[list["Product"]] = relationship(back_populates="brand")
+    products: Mapped[list[Product]] = relationship(back_populates="brand")
 
     def __repr__(self) -> str:
         return f"<Brand {self.name}>"

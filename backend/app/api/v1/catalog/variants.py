@@ -42,15 +42,19 @@ async def list_variants(
 ) -> list[VariantRead]:
     await _get_product_or_404(db, product_id)
     rows = (
-        await db.execute(
-            select(ProductVariant)
-            .where(
-                ProductVariant.product_id == product_id,
-                ProductVariant.deleted_at.is_(None),
+        (
+            await db.execute(
+                select(ProductVariant)
+                .where(
+                    ProductVariant.product_id == product_id,
+                    ProductVariant.deleted_at.is_(None),
+                )
+                .order_by(ProductVariant.size, ProductVariant.color)
             )
-            .order_by(ProductVariant.size, ProductVariant.color)
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     return [VariantRead.model_validate(r) for r in rows]
 
 
@@ -81,8 +85,11 @@ async def create_variant(
         ) from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=variant.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=variant.id,
         changes={**body.model_dump(), "sku": sku, "product_id": str(product.id)},
         request=request,
     )
@@ -116,7 +123,9 @@ async def create_variant_matrix(
                     ProductVariant.deleted_at.is_(None),
                 )
             )
-        ).scalars().all()
+        )
+        .scalars()
+        .all()
     }
 
     created: list[ProductVariant] = []
@@ -143,17 +152,20 @@ async def create_variant_matrix(
         await db.flush()
     except IntegrityError as e:
         await db.rollback()
-        raise HTTPException(
-            status.HTTP_409_CONFLICT, "SKU yoki size/color takrorlanishi"
-        ) from e
+        raise HTTPException(status.HTTP_409_CONFLICT, "SKU yoki size/color takrorlanishi") from e
 
     for v in created:
         await log_activity(
-            db, actor=actor, action=AuditAction.CREATE,
-            entity_type=ENTITY, entity_id=v.id,
+            db,
+            actor=actor,
+            action=AuditAction.CREATE,
+            entity_type=ENTITY,
+            entity_id=v.id,
             changes={
-                "product_id": str(product.id), "sku": v.sku,
-                "size": v.size, "color": v.color,
+                "product_id": str(product.id),
+                "sku": v.sku,
+                "size": v.size,
+                "color": v.color,
                 "wholesale_price": str(v.wholesale_price),
                 "retail_price": str(v.retail_price),
                 "source": "matrix",
@@ -182,17 +194,19 @@ async def update_variant(
 ) -> VariantRead:
     product = await _get_product_or_404(db, product_id)
     variant = await db.get(ProductVariant, variant_id)
-    if (
-        variant is None
-        or variant.deleted_at is not None
-        or variant.product_id != product.id
-    ):
+    if variant is None or variant.deleted_at is not None or variant.product_id != product.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Variant topilmadi")
 
     patch = body.model_dump(exclude_unset=True)
     allowed = {
-        "size", "color", "color_hex", "wholesale_price", "retail_price",
-        "barcode", "image_url", "is_active",
+        "size",
+        "color",
+        "color_hex",
+        "wholesale_price",
+        "retail_price",
+        "barcode",
+        "image_url",
+        "is_active",
     }
     changes = diff_attrs(variant, patch, allowed)
     for f, v in patch.items():
@@ -208,8 +222,13 @@ async def update_variant(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=variant.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=variant.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -230,16 +249,16 @@ async def soft_delete_variant(
 ) -> None:
     product = await _get_product_or_404(db, product_id)
     variant = await db.get(ProductVariant, variant_id)
-    if (
-        variant is None
-        or variant.deleted_at is not None
-        or variant.product_id != product.id
-    ):
+    if variant is None or variant.deleted_at is not None or variant.product_id != product.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Variant topilmadi")
 
     variant.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=variant.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=variant.id,
+        request=request,
     )
     await db.commit()

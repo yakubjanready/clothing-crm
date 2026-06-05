@@ -52,13 +52,11 @@ class Inventory(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         index=True,
     )
     notes: Mapped[str | None] = mapped_column(String(512), nullable=True)
-    finished_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    warehouse: Mapped["Warehouse"] = relationship()
-    actor: Mapped["User | None"] = relationship()
-    items: Mapped[list["InventoryItem"]] = relationship(
+    warehouse: Mapped[Warehouse] = relationship()
+    actor: Mapped[User | None] = relationship()
+    items: Mapped[list[InventoryItem]] = relationship(
         back_populates="inventory",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -67,9 +65,7 @@ class Inventory(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 class InventoryItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "inventory_items"
-    __table_args__ = (
-        UniqueConstraint("inventory_id", "variant_id", name="uq_inventory_item"),
-    )
+    __table_args__ = (UniqueConstraint("inventory_id", "variant_id", name="uq_inventory_item"),)
 
     inventory_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -86,8 +82,8 @@ class InventoryItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     expected_quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     counted_quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
-    inventory: Mapped["Inventory"] = relationship(back_populates="items")
-    variant: Mapped["ProductVariant"] = relationship()
+    inventory: Mapped[Inventory] = relationship(back_populates="items")
+    variant: Mapped[ProductVariant] = relationship()
 
     @property
     def difference(self) -> int:

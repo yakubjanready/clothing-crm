@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 from enum import StrEnum
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, String, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -41,9 +41,7 @@ class Notification(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
         index=True,
     )
-    type: Mapped[NotificationType] = mapped_column(
-        String(32), nullable=False, index=True
-    )
+    type: Mapped[NotificationType] = mapped_column(String(32), nullable=False, index=True)
     severity: Mapped[NotificationSeverity] = mapped_column(
         String(16), nullable=False, default=NotificationSeverity.INFO, index=True
     )
@@ -61,7 +59,7 @@ class Notification(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         Boolean, nullable=False, default=False, server_default=text("false")
     )
 
-    user: Mapped["User | None"] = relationship()
+    user: Mapped[User | None] = relationship()
 
     @property
     def is_broadcast(self) -> bool:

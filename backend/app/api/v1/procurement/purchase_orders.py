@@ -67,6 +67,7 @@ async def _get_po_or_404(db: AsyncSession, po_id: uuid.UUID) -> PurchaseOrder:
 
 # ---- CRUD ----
 
+
 @router.get("", response_model=Page[PurchaseOrderRead])
 async def list_purchase_orders(
     db: AsyncSession = Depends(get_db),
@@ -97,7 +98,10 @@ async def list_purchase_orders(
     items, total, pages = await paginate(db, stmt, params)
     return Page[PurchaseOrderRead](
         items=[PurchaseOrderRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -140,8 +144,11 @@ async def create_purchase_order(
         _raise(e)
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=po.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=po.id,
         changes={"number": po.number, "total": str(po.total)},
         request=request,
     )
@@ -178,9 +185,13 @@ async def update_purchase_order(
             setattr(po, f, patch[f])
 
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=po.id,
-        changes={"keys": list(patch.keys())}, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=po.id,
+        changes={"keys": list(patch.keys())},
+        request=request,
     )
     await db.commit()
     fresh = await reload_with_items(db, po.id)
@@ -199,13 +210,18 @@ async def soft_delete_purchase_order(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Faqat DRAFT o'chiriladi")
     po.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=po.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=po.id,
+        request=request,
     )
     await db.commit()
 
 
 # ---- State actions ----
+
 
 @router.post("/{po_id}/receive", response_model=PurchaseOrderRead)
 async def receive(
@@ -221,8 +237,11 @@ async def receive(
         await db.rollback()
         _raise(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=po.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=po.id,
         changes={"transition": "draft->received", "total": str(po.total)},
         request=request,
     )
@@ -244,15 +263,22 @@ async def pay(
     po = await _get_po_or_404(db, po_id)
     try:
         po, payment = await pay_supplier(
-            db, po=po, amount=body.amount, method=body.method,
-            actor=actor, notes=body.notes,
+            db,
+            po=po,
+            amount=body.amount,
+            method=body.method,
+            actor=actor,
+            notes=body.notes,
         )
     except Exception as e:
         await db.rollback()
         _raise(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=po.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=po.id,
         changes={"payment_amount": str(body.amount), "new_status": po.status},
         request=request,
     )
@@ -276,8 +302,11 @@ async def cancel(
         await db.rollback()
         _raise(e)
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type=ENTITY, entity_id=po.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type=ENTITY,
+        entity_id=po.id,
         changes={"transition": "->cancelled", "reason": body.reason},
         request=request,
     )

@@ -3,11 +3,12 @@
 Funksiyalar `db.flush` qiladi, lekin commit chaqiruvchida (router) bajariladi.
 Xato bo'lsa router rollback qiladi (HTTPException ko'tarib).
 """
+
 from __future__ import annotations
 
 import secrets
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -42,6 +43,7 @@ if TYPE_CHECKING:
 
 # ---------- Xatolar ----------
 
+
 class OrderError(Exception):
     """Order xizmatining bazaviy xatosi."""
 
@@ -57,10 +59,10 @@ class OrderValidationError(OrderError):
 # ---------- State machine ----------
 
 ALLOWED_TRANSITIONS: dict[OrderStatus, set[OrderStatus]] = {
-    OrderStatus.DRAFT:     {OrderStatus.CONFIRMED, OrderStatus.CANCELLED},
+    OrderStatus.DRAFT: {OrderStatus.CONFIRMED, OrderStatus.CANCELLED},
     OrderStatus.CONFIRMED: {OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.CANCELLED},
-    OrderStatus.PAID:      {OrderStatus.SHIPPED, OrderStatus.CANCELLED},
-    OrderStatus.SHIPPED:   {OrderStatus.COMPLETED, OrderStatus.CANCELLED},
+    OrderStatus.PAID: {OrderStatus.SHIPPED, OrderStatus.CANCELLED},
+    OrderStatus.SHIPPED: {OrderStatus.COMPLETED, OrderStatus.CANCELLED},
     OrderStatus.COMPLETED: set(),
     OrderStatus.CANCELLED: set(),
 }
@@ -77,8 +79,9 @@ def assert_transition(current: OrderStatus, target: OrderStatus) -> None:
 
 # ---------- Yordamchi ----------
 
+
 def generate_order_number(prefix: str = "ORD") -> str:
-    yyyymm = datetime.now(timezone.utc).strftime("%Y%m")
+    yyyymm = datetime.now(UTC).strftime("%Y%m")
     suffix = secrets.token_hex(3).upper()  # 6 hex
     return f"{prefix}-{yyyymm}-{suffix}"
 
@@ -99,10 +102,10 @@ async def _load_variants_map(
     if not variant_ids:
         return {}
     rows = (
-        await db.execute(
-            select(ProductVariant).where(ProductVariant.id.in_(variant_ids))
-        )
-    ).scalars().all()
+        (await db.execute(select(ProductVariant).where(ProductVariant.id.in_(variant_ids))))
+        .scalars()
+        .all()
+    )
     return {v.id: v for v in rows}
 
 
@@ -113,6 +116,7 @@ def _recalculate_totals(order: Order) -> None:
 
 
 # ---------- Yaratish va tahrirlash ----------
+
 
 async def build_draft_order(
     db: AsyncSession,
@@ -172,9 +176,7 @@ async def replace_items(
     discount: Decimal | None = None,
 ) -> Order:
     if order.status != OrderStatus.DRAFT:
-        raise InvalidOrderTransitionError(
-            "Items faqat DRAFT statusda o'zgartiriladi"
-        )
+        raise InvalidOrderTransitionError("Items faqat DRAFT statusda o'zgartiriladi")
     for it in list(order.items):
         await db.delete(it)
     order.items.clear()
@@ -190,8 +192,11 @@ async def replace_items(
         line = (Decimal(qty) * Decimal(unit_price)).quantize(Decimal("0.01"))
         order.items.append(
             OrderItem(
-                order_id=order.id, variant_id=variant.id, quantity=qty,
-                unit_price=Decimal(unit_price), line_total=line,
+                order_id=order.id,
+                variant_id=variant.id,
+                quantity=qty,
+                unit_price=Decimal(unit_price),
+                line_total=line,
             )
         )
     if discount is not None:
@@ -203,9 +208,8 @@ async def replace_items(
 
 # ---------- State amallar ----------
 
-async def confirm_order(
-    db: AsyncSession, *, order: Order, actor: "User | None"
-) -> Order:
+
+async def confirm_order(db: AsyncSession, *, order: Order, actor: User | None) -> Order:
     """DRAFT → CONFIRMED. Kredit limit + qoldiqlarni reserve qiladi."""
     assert_transition(order.status, OrderStatus.CONFIRMED)
     if not order.items:
@@ -232,7 +236,7 @@ async def confirm_order(
     await adjust_customer_debt(db, customer=customer, delta=order.total, actor=actor)
 
     order.status = OrderStatus.CONFIRMED
-    order.confirmed_at = datetime.now(timezone.utc)
+    order.confirmed_at = datetime.now(UTC)
     await db.flush()
     return order
 
@@ -243,7 +247,7 @@ async def pay_order(
     order: Order,
     amount: Decimal,
     method: PaymentMethod,
-    actor: "User | None",
+    actor: User | None,
     notes: str | None = None,
 ) -> tuple[Order, Payment]:
     """CONFIRMED yoki SHIPPED → PAID (agar to'liq to'langan bo'lsa).
@@ -258,9 +262,7 @@ async def pay_order(
 
     remaining = order.total - order.paid_amount
     if amount > remaining:
-        raise OrderValidationError(
-            f"To'lov qoldiqdan ortiq (qoldiq={remaining}, to'lov={amount})"
-        )
+        raise OrderValidationError(f"To'lov qoldiqdan ortiq (qoldiq={remaining}, to'lov={amount})")
 
     customer = await db.get(Customer, order.customer_id)
     await adjust_customer_debt(db, customer=customer, delta=-amount, actor=actor)
@@ -277,7 +279,7 @@ async def pay_order(
     order.paid_amount = order.paid_amount + amount
     if order.paid_amount >= order.total and order.status == OrderStatus.CONFIRMED:
         order.status = OrderStatus.PAID
-        order.paid_at = datetime.now(timezone.utc)
+        order.paid_at = datetime.now(UTC)
     elif order.paid_amount >= order.total and order.status == OrderStatus.SHIPPED:
         order.status = OrderStatus.COMPLETED
 
@@ -285,16 +287,12 @@ async def pay_order(
     return order, payment
 
 
-async def ship_order(
-    db: AsyncSession, *, order: Order, actor: "User | None"
-) -> Order:
+async def ship_order(db: AsyncSession, *, order: Order, actor: User | None) -> Order:
     """CONFIRMED yoki PAID → SHIPPED (yoki COMPLETED agar paid).
     Reservni bo'shatadi va stockdan chiqaradi (OUT movement).
     """
     if order.status not in {OrderStatus.CONFIRMED, OrderStatus.PAID}:
-        raise InvalidOrderTransitionError(
-            f"Order {order.status} statusda — yuk berib bo'lmaydi"
-        )
+        raise InvalidOrderTransitionError(f"Order {order.status} statusda — yuk berib bo'lmaydi")
 
     for item in order.items:
         await release_reservation(
@@ -318,7 +316,7 @@ async def ship_order(
             reference_id=order.id,
         )
 
-    order.shipped_at = datetime.now(timezone.utc)
+    order.shipped_at = datetime.now(UTC)
     if order.status == OrderStatus.PAID:
         order.status = OrderStatus.COMPLETED
     else:
@@ -331,7 +329,7 @@ async def cancel_order(
     db: AsyncSession,
     *,
     order: Order,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
 ) -> Order:
     """Cancel:
@@ -342,9 +340,7 @@ async def cancel_order(
     - SHIPPED: stockka qaytarish (receive), qarz orqaga
     """
     if order.status in {OrderStatus.COMPLETED, OrderStatus.CANCELLED}:
-        raise InvalidOrderTransitionError(
-            f"Order {order.status} — bekor qilib bo'lmaydi"
-        )
+        raise InvalidOrderTransitionError(f"Order {order.status} — bekor qilib bo'lmaydi")
 
     customer = await db.get(Customer, order.customer_id)
 
@@ -394,7 +390,7 @@ async def cancel_order(
             await adjust_customer_debt(db, customer=customer, delta=-remaining, actor=actor)
 
     order.status = OrderStatus.CANCELLED
-    order.cancelled_at = datetime.now(timezone.utc)
+    order.cancelled_at = datetime.now(UTC)
     order.cancel_reason = reason
     await db.flush()
     return order
@@ -402,12 +398,13 @@ async def cancel_order(
 
 # ---------- Returns ----------
 
+
 async def create_return(
     db: AsyncSession,
     *,
     order: Order,
     items_data: list[dict],
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
 ) -> Return:
     """Qaytarish so'rovi — REQUESTED holatda. Stock va balans `approve_return` da
@@ -423,14 +420,10 @@ async def create_return(
     for d in items_data:
         oi = by_id.get(d["order_item_id"])
         if oi is None:
-            raise OrderValidationError(
-                f"order_item_id ushbu orderda yo'q: {d['order_item_id']}"
-            )
+            raise OrderValidationError(f"order_item_id ushbu orderda yo'q: {d['order_item_id']}")
         qty = d["quantity"]
         if qty <= 0 or qty > oi.quantity:
-            raise OrderValidationError(
-                f"qty {qty} chegaradan tashqari (max {oi.quantity})"
-            )
+            raise OrderValidationError(f"qty {qty} chegaradan tashqari (max {oi.quantity})")
         line = (Decimal(qty) * oi.unit_price).quantize(Decimal("0.01"))
         ri_objs.append(
             ReturnItem(
@@ -456,14 +449,10 @@ async def create_return(
     return ret
 
 
-async def approve_return(
-    db: AsyncSession, *, ret: Return, actor: "User | None"
-) -> Return:
+async def approve_return(db: AsyncSession, *, ret: Return, actor: User | None) -> Return:
     """REQUESTED → APPROVED. Tovarni stockka qaytarish + mijoz qarzi/omonati."""
     if ret.status != ReturnStatus.REQUESTED:
-        raise InvalidOrderTransitionError(
-            f"Return {ret.status} — tasdiqlab bo'lmaydi"
-        )
+        raise InvalidOrderTransitionError(f"Return {ret.status} — tasdiqlab bo'lmaydi")
     order = await db.get(Order, ret.order_id)
     customer = await db.get(Customer, order.customer_id)
 
@@ -486,26 +475,21 @@ async def approve_return(
     # Qolgan qism mijozning omonati (bu yerda alohida track qilinmaydi —
     # adjust_customer_debt 0 ga to'xtaydi).
     if ret.total_refund > 0:
-        await adjust_customer_debt(
-            db, customer=customer, delta=-ret.total_refund, actor=actor
-        )
+        await adjust_customer_debt(db, customer=customer, delta=-ret.total_refund, actor=actor)
 
     ret.status = ReturnStatus.APPROVED
-    ret.processed_at = datetime.now(timezone.utc)
+    ret.processed_at = datetime.now(UTC)
     await db.flush()
     return ret
 
 
 # ---------- Invoice ----------
 
-async def create_invoice(
-    db: AsyncSession, *, order: Order
-) -> Invoice:
+
+async def create_invoice(db: AsyncSession, *, order: Order) -> Invoice:
     """Invoice yozuvi (PDF generatsiya keyin Celery'da)."""
     if order.status == OrderStatus.DRAFT:
-        raise InvalidOrderTransitionError(
-            "DRAFT order uchun invoice yaratib bo'lmaydi"
-        )
+        raise InvalidOrderTransitionError("DRAFT order uchun invoice yaratib bo'lmaydi")
     inv = Invoice(
         number=generate_order_number("INV"),
         order_id=order.id,
@@ -519,13 +503,22 @@ async def create_invoice(
 
 # Re-export stock va customer xatolari (router'da bitta `except` ishlatish uchun)
 __all__ = [
-    "OrderError", "InvalidOrderTransitionError", "OrderValidationError",
-    "ALLOWED_TRANSITIONS", "assert_transition",
-    "generate_order_number",
-    "build_draft_order", "replace_items",
-    "confirm_order", "pay_order", "ship_order", "cancel_order",
-    "create_return", "approve_return",
-    "create_invoice",
-    "InsufficientStockError", "InvalidMovementError",
+    "ALLOWED_TRANSITIONS",
     "CreditLimitExceededError",
+    "InsufficientStockError",
+    "InvalidMovementError",
+    "InvalidOrderTransitionError",
+    "OrderError",
+    "OrderValidationError",
+    "approve_return",
+    "assert_transition",
+    "build_draft_order",
+    "cancel_order",
+    "confirm_order",
+    "create_invoice",
+    "create_return",
+    "generate_order_number",
+    "pay_order",
+    "replace_items",
+    "ship_order",
 ]

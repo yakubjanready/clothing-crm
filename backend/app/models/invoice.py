@@ -17,16 +17,14 @@ if TYPE_CHECKING:
 
 class InvoiceStatus(StrEnum):
     PENDING = "pending"  # PDF generatsiya kutilmoqda (Celery'da)
-    READY = "ready"      # PDF tayyor
-    FAILED = "failed"    # generatsiya xatoligi
+    READY = "ready"  # PDF tayyor
+    FAILED = "failed"  # generatsiya xatoligi
 
 
 class Invoice(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "invoices"
 
-    number: Mapped[str] = mapped_column(
-        String(32), unique=True, nullable=False, index=True
-    )
+    number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
     order_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("orders.id", ondelete="CASCADE"),
@@ -42,7 +40,7 @@ class Invoice(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
-    order: Mapped["Order"] = relationship(back_populates="invoices")
+    order: Mapped[Order] = relationship(back_populates="invoices")
 
     def __repr__(self) -> str:
         return f"<Invoice {self.number} {self.status}>"

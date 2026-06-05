@@ -1,4 +1,5 @@
 """utils/pagination.py — birlik testlar."""
+
 from __future__ import annotations
 
 from sqlalchemy import select

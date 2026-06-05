@@ -44,11 +44,7 @@ async def list_returns(
     order_id: uuid.UUID | None = Query(default=None),
     status_: ReturnStatus | None = Query(default=None, alias="status"),
 ) -> Page[ReturnRead]:
-    stmt = (
-        select(Return)
-        .options(selectinload(Return.items))
-        .order_by(Return.created_at.desc())
-    )
+    stmt = select(Return).options(selectinload(Return.items)).order_by(Return.created_at.desc())
     if order_id is not None:
         stmt = stmt.where(Return.order_id == order_id)
     if status_ is not None:
@@ -57,7 +53,10 @@ async def list_returns(
     items, total, pages = await paginate(db, stmt, params)
     return Page[ReturnRead](
         items=[ReturnRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -69,9 +68,7 @@ async def get_return(
 ) -> ReturnRead:
     ret = (
         await db.execute(
-            select(Return)
-            .where(Return.id == return_id)
-            .options(selectinload(Return.items))
+            select(Return).where(Return.id == return_id).options(selectinload(Return.items))
         )
     ).scalar_one_or_none()
     if ret is None:
@@ -98,26 +95,29 @@ async def create_return_endpoint(
 
     try:
         ret = await create_return(
-            db, order=order,
+            db,
+            order=order,
             items_data=[i.model_dump() for i in body.items],
-            actor=actor, reason=body.reason,
+            actor=actor,
+            reason=body.reason,
         )
     except Exception as e:
         await db.rollback()
         _raise(e)
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type="return", entity_id=ret.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type="return",
+        entity_id=ret.id,
         changes={"order_number": order.number, "total_refund": str(ret.total_refund)},
         request=request,
     )
     await db.commit()
     fresh = (
         await db.execute(
-            select(Return)
-            .where(Return.id == ret.id)
-            .options(selectinload(Return.items))
+            select(Return).where(Return.id == ret.id).options(selectinload(Return.items))
         )
     ).scalar_one()
     return ReturnRead.model_validate(fresh)
@@ -132,9 +132,7 @@ async def approve_return_endpoint(
 ) -> ReturnRead:
     ret = (
         await db.execute(
-            select(Return)
-            .where(Return.id == return_id)
-            .options(selectinload(Return.items))
+            select(Return).where(Return.id == return_id).options(selectinload(Return.items))
         )
     ).scalar_one_or_none()
     if ret is None:
@@ -147,17 +145,18 @@ async def approve_return_endpoint(
         _raise(e)
 
     await log_activity(
-        db, actor=actor, action=AuditAction.UPDATE,
-        entity_type="return", entity_id=ret.id,
+        db,
+        actor=actor,
+        action=AuditAction.UPDATE,
+        entity_type="return",
+        entity_id=ret.id,
         changes={"transition": "requested->approved", "refund": str(ret.total_refund)},
         request=request,
     )
     await db.commit()
     fresh = (
         await db.execute(
-            select(Return)
-            .where(Return.id == ret.id)
-            .options(selectinload(Return.items))
+            select(Return).where(Return.id == ret.id).options(selectinload(Return.items))
         )
     ).scalar_one()
     return ReturnRead.model_validate(fresh)

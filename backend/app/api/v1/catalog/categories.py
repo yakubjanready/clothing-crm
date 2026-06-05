@@ -47,7 +47,10 @@ async def list_categories(
     items, total, pages = await paginate(db, stmt, params)
     return Page[CategoryRead](
         items=[CategoryRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -87,8 +90,13 @@ async def create_category(
         raise HTTPException(status.HTTP_409_CONFLICT, "slug band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=cat.id, changes=data, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=cat.id,
+        changes=data,
+        request=request,
     )
     await db.commit()
     await db.refresh(cat)
@@ -123,8 +131,13 @@ async def update_category(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=cat.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=cat.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -147,8 +160,12 @@ async def soft_delete_category(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Kategoriya topilmadi")
     cat.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=cat.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=cat.id,
+        request=request,
     )
     await db.commit()
 
@@ -167,8 +184,12 @@ async def restore_category(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Kategoriya o'chirilmagan")
     cat.restore()
     await log_activity(
-        db, actor=actor, action=AuditAction.RESTORE,
-        entity_type=ENTITY, entity_id=cat.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.RESTORE,
+        entity_type=ENTITY,
+        entity_id=cat.id,
+        request=request,
     )
     await db.commit()
     await db.refresh(cat)

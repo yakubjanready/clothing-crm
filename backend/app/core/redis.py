@@ -1,4 +1,5 @@
 """Async Redis klienti — lazy singleton."""
+
 from __future__ import annotations
 
 from redis.asyncio import Redis

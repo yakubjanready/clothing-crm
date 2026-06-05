@@ -8,14 +8,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.order import OrderStatus
 
-
 # ---- OrderItem ----
+
 
 class OrderItemCreate(BaseModel):
     variant_id: uuid.UUID
     quantity: int = Field(gt=0)
     unit_price: Decimal | None = Field(
-        default=None, ge=0, decimal_places=2,
+        default=None,
+        ge=0,
+        decimal_places=2,
         description="None bo'lsa variant.wholesale_price snapshot olinadi",
     )
 
@@ -33,6 +35,7 @@ class OrderItemRead(BaseModel):
 
 # ---- Order ----
 
+
 class OrderCreate(BaseModel):
     customer_id: uuid.UUID
     warehouse_id: uuid.UUID
@@ -44,6 +47,7 @@ class OrderCreate(BaseModel):
 
 class OrderUpdate(BaseModel):
     """Faqat DRAFT statusda — items o'rnini bosadi."""
+
     items: list[OrderItemCreate] | None = Field(default=None, min_length=1, max_length=200)
     discount: Decimal | None = Field(default=None, ge=0, decimal_places=2)
     notes: str | None = None

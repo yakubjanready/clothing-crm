@@ -23,12 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  DEFAULT_PRODUCT,
-  GENDERS,
-  productSchema,
-  type ProductFormValues,
-} from "./product-schema";
+import { DEFAULT_PRODUCT, GENDERS, productSchema, type ProductFormValues } from "./product-schema";
 
 const NO_BRAND = "__none__";
 
@@ -39,12 +34,7 @@ interface ProductFormProps {
   isSubmitting?: boolean;
 }
 
-export function ProductForm({
-  initial,
-  onSubmit,
-  submitLabel,
-  isSubmitting,
-}: ProductFormProps) {
+export function ProductForm({ initial, onSubmit, submitLabel, isSubmitting }: ProductFormProps) {
   const { t } = useTranslation();
   const categories = useCategoriesList();
   const brands = useBrandsList();
@@ -180,9 +170,7 @@ export function ProductForm({
                 <FormLabel>{t("products.fields.brand")}</FormLabel>
                 <Select
                   value={field.value || NO_BRAND}
-                  onValueChange={(v) =>
-                    field.onChange(v === NO_BRAND ? "" : v)
-                  }
+                  onValueChange={(v) => field.onChange(v === NO_BRAND ? "" : v)}
                 >
                   <FormControl>
                     <SelectTrigger>

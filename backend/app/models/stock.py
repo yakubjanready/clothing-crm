@@ -56,8 +56,8 @@ class Stock(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         Integer, nullable=False, default=0, server_default=text("0")
     )
 
-    warehouse: Mapped["Warehouse"] = relationship(back_populates="stocks")
-    variant: Mapped["ProductVariant"] = relationship()
+    warehouse: Mapped[Warehouse] = relationship(back_populates="stocks")
+    variant: Mapped[ProductVariant] = relationship()
 
     @property
     def available(self) -> int:

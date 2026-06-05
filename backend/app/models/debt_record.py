@@ -30,26 +30,16 @@ class DebtRecord(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     """
 
     __tablename__ = "debt_records"
-    __table_args__ = (
-        CheckConstraint("amount > 0", name="ck_debt_amount_positive"),
-    )
+    __table_args__ = (CheckConstraint("amount > 0", name="ck_debt_amount_positive"),)
 
-    party_type: Mapped[DebtPartyType] = mapped_column(
-        String(16), nullable=False, index=True
-    )
-    party_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), nullable=False, index=True
-    )
-    direction: Mapped[DebtDirection] = mapped_column(
-        String(16), nullable=False, index=True
-    )
+    party_type: Mapped[DebtPartyType] = mapped_column(String(16), nullable=False, index=True)
+    party_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), nullable=False, index=True)
+    direction: Mapped[DebtDirection] = mapped_column(String(16), nullable=False, index=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     balance_after: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
 
     reason: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    reference_type: Mapped[str | None] = mapped_column(
-        String(64), nullable=True, index=True
-    )
+    reference_type: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
     reference_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True), nullable=True, index=True
     )
@@ -60,7 +50,7 @@ class DebtRecord(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
     )
 
-    actor: Mapped["User | None"] = relationship()
+    actor: Mapped[User | None] = relationship()
 
     def __repr__(self) -> str:
         return (

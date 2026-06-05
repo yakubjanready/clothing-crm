@@ -49,7 +49,10 @@ async def list_warehouses(
     items, total, pages = await paginate(db, stmt, params)
     return Page[WarehouseRead](
         items=[WarehouseRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -81,8 +84,13 @@ async def create_warehouse(
         raise HTTPException(status.HTTP_409_CONFLICT, "code band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=w.id, changes=body.model_dump(), request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=w.id,
+        changes=body.model_dump(),
+        request=request,
     )
     await db.commit()
     await db.refresh(w)
@@ -110,8 +118,13 @@ async def update_warehouse(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=w.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=w.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -134,8 +147,12 @@ async def soft_delete_warehouse(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Ombor topilmadi")
     w.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=w.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=w.id,
+        request=request,
     )
     await db.commit()
 
@@ -154,8 +171,12 @@ async def restore_warehouse(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Ombor o'chirilmagan")
     w.restore()
     await log_activity(
-        db, actor=actor, action=AuditAction.RESTORE,
-        entity_type=ENTITY, entity_id=w.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.RESTORE,
+        entity_type=ENTITY,
+        entity_id=w.id,
+        request=request,
     )
     await db.commit()
     await db.refresh(w)

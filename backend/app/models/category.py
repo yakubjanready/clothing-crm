@@ -29,13 +29,11 @@ class Category(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         index=True,
     )
 
-    parent: Mapped["Category | None"] = relationship(
+    parent: Mapped[Category | None] = relationship(
         "Category", remote_side="Category.id", back_populates="children"
     )
-    children: Mapped[list["Category"]] = relationship(
-        "Category", back_populates="parent"
-    )
-    products: Mapped[list["Product"]] = relationship(back_populates="category")
+    children: Mapped[list[Category]] = relationship("Category", back_populates="parent")
+    products: Mapped[list[Product]] = relationship(back_populates="category")
 
     def __repr__(self) -> str:
         return f"<Category {self.slug}>"

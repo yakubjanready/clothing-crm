@@ -34,9 +34,7 @@ class ReturnStatus(StrEnum):
 class Return(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "returns"
 
-    number: Mapped[str] = mapped_column(
-        String(32), unique=True, nullable=False, index=True
-    )
+    number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
     order_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("orders.id", ondelete="RESTRICT"),
@@ -58,9 +56,9 @@ class Return(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     processed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    order: Mapped["Order"] = relationship(back_populates="returns")
-    actor: Mapped["User | None"] = relationship()
-    items: Mapped[list["ReturnItem"]] = relationship(
+    order: Mapped[Order] = relationship(back_populates="returns")
+    actor: Mapped[User | None] = relationship()
+    items: Mapped[list[ReturnItem]] = relationship(
         back_populates="return_",
         cascade="all, delete-orphan",
         lazy="selectin",
@@ -72,9 +70,7 @@ class Return(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
 class ReturnItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "return_items"
-    __table_args__ = (
-        CheckConstraint("quantity > 0", name="ck_return_item_qty_positive"),
-    )
+    __table_args__ = (CheckConstraint("quantity > 0", name="ck_return_item_qty_positive"),)
 
     return_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -92,5 +88,5 @@ class ReturnItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     unit_price: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     line_total: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
 
-    return_: Mapped["Return"] = relationship(back_populates="items")
-    order_item: Mapped["OrderItem"] = relationship()
+    return_: Mapped[Return] = relationship(back_populates="items")
+    order_item: Mapped[OrderItem] = relationship()

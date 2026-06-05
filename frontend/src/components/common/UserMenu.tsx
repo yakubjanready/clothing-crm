@@ -51,9 +51,7 @@ export function UserMenu() {
               {initials(user.full_name || user.email)}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden text-sm font-medium md:inline">
-            {user.full_name}
-          </span>
+          <span className="hidden text-sm font-medium md:inline">{user.full_name}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

@@ -1,4 +1,5 @@
 """FastAPI dependency'lar — joriy foydalanuvchi va permission tekshiruvi."""
+
 from __future__ import annotations
 
 import uuid

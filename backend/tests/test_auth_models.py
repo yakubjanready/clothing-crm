@@ -1,4 +1,5 @@
 """Auth modellari sxema testlari (kichik, tez)."""
+
 from __future__ import annotations
 
 from app.models.permission import Permission
@@ -23,8 +24,14 @@ def test_role_name_enum_has_seven_roles() -> None:
 def test_user_table_has_auth_columns() -> None:
     cols = {c.name for c in User.__table__.columns}
     expected = {
-        "id", "email", "full_name", "hashed_password", "is_active",
-        "created_at", "updated_at", "deleted_at",
+        "id",
+        "email",
+        "full_name",
+        "hashed_password",
+        "is_active",
+        "created_at",
+        "updated_at",
+        "deleted_at",
     }
     assert expected.issubset(cols), f"missing: {expected - cols}"
 
@@ -48,6 +55,7 @@ def test_permission_table_has_unique_code() -> None:
 
 def test_m2m_tables_registered_in_metadata() -> None:
     from app.db.base import Base
+
     tables = set(Base.metadata.tables.keys())
     assert "user_roles" in tables
     assert "role_permissions" in tables
@@ -59,11 +67,15 @@ def test_m2m_tables_registered_in_metadata() -> None:
 def test_user_permission_codes_aggregates_from_roles() -> None:
     p1 = Permission(code="customer:read", description="")
     p2 = Permission(code="order:read", description="")
-    r1 = Role(name="r1", description=""); r1.permissions = [p1]
-    r2 = Role(name="r2", description=""); r2.permissions = [p2, p1]
+    r1 = Role(name="r1", description="")
+    r1.permissions = [p1]
+    r2 = Role(name="r2", description="")
+    r2.permissions = [p2, p1]
     u = User(
-        email="u@x.x", full_name="u",
-        hashed_password="x", is_active=True,
+        email="u@x.x",
+        full_name="u",
+        hashed_password="x",
+        is_active=True,
     )
     u.roles = [r1, r2]
     assert u.permission_codes == {"customer:read", "order:read"}

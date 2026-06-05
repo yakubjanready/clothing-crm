@@ -9,8 +9,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.models.payment import PaymentMethod
 from app.models.purchase_order import PurchaseOrderStatus
 
-
 # ---- PurchaseItem ----
+
 
 class PurchaseItemCreate(BaseModel):
     variant_id: uuid.UUID
@@ -30,6 +30,7 @@ class PurchaseItemRead(BaseModel):
 
 
 # ---- PurchaseOrder ----
+
 
 class PurchaseOrderCreate(BaseModel):
     supplier_id: uuid.UUID

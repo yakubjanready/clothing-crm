@@ -47,7 +47,10 @@ async def list_brands(
     items, total, pages = await paginate(db, stmt, params)
     return Page[BrandRead](
         items=[BrandRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -83,8 +86,13 @@ async def create_brand(
         raise HTTPException(status.HTTP_409_CONFLICT, "name yoki slug band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=b.id, changes=data, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=b.id,
+        changes=data,
+        request=request,
     )
     await db.commit()
     await db.refresh(b)
@@ -112,8 +120,13 @@ async def update_brand(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=b.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=b.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -136,8 +149,12 @@ async def soft_delete_brand(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Brand topilmadi")
     b.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=b.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=b.id,
+        request=request,
     )
     await db.commit()
 
@@ -156,8 +173,12 @@ async def restore_brand(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Brand o'chirilmagan")
     b.restore()
     await log_activity(
-        db, actor=actor, action=AuditAction.RESTORE,
-        entity_type=ENTITY, entity_id=b.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.RESTORE,
+        entity_type=ENTITY,
+        entity_id=b.id,
+        request=request,
     )
     await db.commit()
     await db.refresh(b)

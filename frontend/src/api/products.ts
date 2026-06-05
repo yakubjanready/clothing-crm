@@ -1,9 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type UseQueryResult,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type UseQueryResult } from "@tanstack/react-query";
 
 import { api } from "@/lib/api";
 import type {
@@ -36,9 +31,7 @@ export interface ProductsListParams {
 
 // ---- Hooks ----
 
-export function useProductsList(
-  params: ProductsListParams,
-): UseQueryResult<Page<Product>> {
+export function useProductsList(params: ProductsListParams): UseQueryResult<Page<Product>> {
   return useQuery({
     queryKey: productKeys.list(params),
     queryFn: async () => {

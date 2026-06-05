@@ -51,7 +51,10 @@ async def list_stock(
     items, total, pages = await paginate(db, stmt, params)
     return Page[StockRead](
         items=[_to_read(s) for s in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 

@@ -6,6 +6,7 @@
      (faol WebSocket connection'lar uni o'qiydi)
   3. Tanlangan outbound channellar (email/telegram) uchun Celery task yuboradi
 """
+
 from __future__ import annotations
 
 import json
@@ -70,32 +71,30 @@ async def notify(
     try:
         redis = get_redis()
         await redis.publish(REDIS_CHANNEL, json.dumps(payload, default=str))
-    except Exception:  # noqa: BLE001 — broker yo'qligi flow'ni buzmasin
+    except Exception:
         logger.exception("notify: redis publish failed")
 
     # --- 2. Outbound channellar (Celery) ---
     if "email" in channels:
         try:
             from app.tasks.celery_app import celery_app
-            celery_app.send_task(
-                "send_email_notification", args=[str(notif.id)]
-            )
+
+            celery_app.send_task("send_email_notification", args=[str(notif.id)])
             notif.sent_via_email = True
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.exception("notify: email celery dispatch failed")
 
     if "telegram" in channels:
         try:
             from app.tasks.celery_app import celery_app
-            celery_app.send_task(
-                "send_telegram_notification", args=[str(notif.id)]
-            )
+
+            celery_app.send_task("send_telegram_notification", args=[str(notif.id)])
             notif.sent_via_telegram = True
-        except Exception:  # noqa: BLE001
+        except Exception:
             logger.exception("notify: telegram celery dispatch failed")
 
     await db.flush()
     return notif
 
 
-__all__ = ["notify", "REDIS_CHANNEL"]
+__all__ = ["REDIS_CHANNEL", "notify"]

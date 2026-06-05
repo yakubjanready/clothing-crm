@@ -10,12 +10,12 @@ from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 
 class MovementType(StrEnum):
-    IN = "in"               # kirim (to_warehouse)
-    OUT = "out"             # chiqim (from_warehouse)
-    TRANSFER = "transfer"   # bir ombordan boshqasiga
-    RESERVE = "reserve"     # rezerv qilish
-    RELEASE = "release"     # rezervni bo'shatish
-    ADJUST = "adjust"       # inventarizatsiya farqi
+    IN = "in"  # kirim (to_warehouse)
+    OUT = "out"  # chiqim (from_warehouse)
+    TRANSFER = "transfer"  # bir ombordan boshqasiga
+    RESERVE = "reserve"  # rezerv qilish
+    RELEASE = "release"  # rezervni bo'shatish
+    ADJUST = "adjust"  # inventarizatsiya farqi
 
 
 class StockMovement(Base, UUIDPrimaryKeyMixin, TimestampMixin):
@@ -23,9 +23,7 @@ class StockMovement(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     __tablename__ = "stock_movements"
 
-    type: Mapped[MovementType] = mapped_column(
-        String(16), nullable=False, index=True
-    )
+    type: Mapped[MovementType] = mapped_column(String(16), nullable=False, index=True)
     variant_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("product_variants.id", ondelete="RESTRICT"),
@@ -48,9 +46,7 @@ class StockMovement(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     reason: Mapped[str | None] = mapped_column(String(256), nullable=True)
     reference_type: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    reference_id: Mapped[uuid.UUID | None] = mapped_column(
-        Uuid(as_uuid=True), nullable=True
-    )
+    reference_id: Mapped[uuid.UUID | None] = mapped_column(Uuid(as_uuid=True), nullable=True)
     actor_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid(as_uuid=True),
         ForeignKey("users.id", ondelete="SET NULL"),

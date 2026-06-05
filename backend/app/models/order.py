@@ -48,9 +48,7 @@ class Order(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         CheckConstraint("paid_amount >= 0", name="ck_order_paid_nonneg"),
     )
 
-    number: Mapped[str] = mapped_column(
-        String(32), unique=True, nullable=False, index=True
-    )
+    number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
     status: Mapped[OrderStatus] = mapped_column(
         String(16), nullable=False, default=OrderStatus.DRAFT, index=True
     )
@@ -75,16 +73,28 @@ class Order(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     )
 
     subtotal: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
     discount: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
     total: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
     paid_amount: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -95,23 +105,23 @@ class Order(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     shipped_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    customer: Mapped["Customer"] = relationship()
-    warehouse: Mapped["Warehouse"] = relationship()
-    manager: Mapped["User | None"] = relationship()
-    items: Mapped[list["OrderItem"]] = relationship(
+    customer: Mapped[Customer] = relationship()
+    warehouse: Mapped[Warehouse] = relationship()
+    manager: Mapped[User | None] = relationship()
+    items: Mapped[list[OrderItem]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    payments: Mapped[list["Payment"]] = relationship(
+    payments: Mapped[list[Payment]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
     )
-    invoices: Mapped[list["Invoice"]] = relationship(
+    invoices: Mapped[list[Invoice]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
     )
-    returns: Mapped[list["Return"]] = relationship(
+    returns: Mapped[list[Return]] = relationship(
         back_populates="order",
         cascade="all, delete-orphan",
     )

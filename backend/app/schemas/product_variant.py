@@ -55,6 +55,7 @@ class VariantRead(BaseModel):
 
 class VariantMatrixRequest(BaseModel):
     """size × color kombinatsiyalarini bir martada yaratish."""
+
     sizes: list[str] = Field(min_length=1, max_length=20)
     colors: list[VariantColorSpec] = Field(min_length=1, max_length=20)
     wholesale_price: Decimal = Field(default=Decimal("0"), ge=0, decimal_places=2)

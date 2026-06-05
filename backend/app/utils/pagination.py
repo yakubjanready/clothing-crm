@@ -1,4 +1,5 @@
 """Sahifalash yordamchilari — query param + javob konvert."""
+
 from __future__ import annotations
 
 import math

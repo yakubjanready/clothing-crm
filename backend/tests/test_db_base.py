@@ -2,10 +2,11 @@
 alohida `TestBase.metadata` ichida `Sample` modelini quramiz, shunda Base.metadata
 ifloslanmaydi va alembic autogenerate'ga bog'liqlik tushmaydi.
 """
+
 from __future__ import annotations
 
 import uuid as _uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import pytest
 from sqlalchemy import DateTime, Uuid
@@ -23,6 +24,7 @@ class Sample(_TestBase, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
 
 
 # ---- Schema (column metadata) testlari ----
+
 
 def test_id_column_is_uuid_primary_key() -> None:
     col = Sample.__table__.c.id
@@ -55,6 +57,7 @@ def test_deleted_at_is_nullable_tz_aware_timestamp() -> None:
 
 # ---- SoftDeleteMixin xulq-atvori testlari ----
 
+
 @pytest.fixture
 def sample() -> Sample:
     s = Sample()
@@ -71,7 +74,7 @@ def test_soft_delete_sets_tz_aware_utc(sample: Sample) -> None:
     assert sample.is_deleted is True
     assert isinstance(sample.deleted_at, datetime)
     assert sample.deleted_at.tzinfo is not None
-    assert sample.deleted_at.utcoffset() == timezone.utc.utcoffset(sample.deleted_at)
+    assert sample.deleted_at.utcoffset() == UTC.utcoffset(sample.deleted_at)
 
 
 def test_restore_clears_deleted_at(sample: Sample) -> None:
@@ -83,6 +86,7 @@ def test_restore_clears_deleted_at(sample: Sample) -> None:
 
 
 # ---- db modulining eksporti testlari ----
+
 
 def test_db_module_reexports() -> None:
     from app import db

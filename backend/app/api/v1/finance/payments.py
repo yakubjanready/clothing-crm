@@ -66,7 +66,10 @@ async def list_payments(
     items, total, pages = await paginate(db, stmt, params)
     return Page[FinancePaymentRead](
         items=[FinancePaymentRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -100,11 +103,16 @@ async def create_payment(
         _raise(e)
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type="finance_payment", entity_id=payment.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type="finance_payment",
+        entity_id=payment.id,
         changes={
-            "direction": body.direction, "category": body.category,
-            "account_id": str(body.account_id), "amount": str(body.amount),
+            "direction": body.direction,
+            "category": body.category,
+            "account_id": str(body.account_id),
+            "amount": str(body.amount),
         },
         request=request,
     )
@@ -113,9 +121,7 @@ async def create_payment(
     return FinancePaymentRead.model_validate(payment)
 
 
-@router.post(
-    "/transfer", response_model=TransferResponse, status_code=status.HTTP_201_CREATED
-)
+@router.post("/transfer", response_model=TransferResponse, status_code=status.HTTP_201_CREATED)
 async def transfer(
     body: TransferRequest,
     request: Request,
@@ -136,8 +142,11 @@ async def transfer(
         _raise(e)
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type="finance_payment", entity_id=out_p.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type="finance_payment",
+        entity_id=out_p.id,
         changes={
             "transfer_from": str(body.from_account_id),
             "transfer_to": str(body.to_account_id),

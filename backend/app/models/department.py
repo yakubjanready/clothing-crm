@@ -29,19 +29,19 @@ class Department(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         index=True,
     )
 
-    parent: Mapped["Department | None"] = relationship(
+    parent: Mapped[Department | None] = relationship(
         "Department",
         remote_side="Department.id",
         back_populates="children",
     )
-    children: Mapped[list["Department"]] = relationship(
+    children: Mapped[list[Department]] = relationship(
         "Department",
         back_populates="parent",
     )
-    positions: Mapped[list["Position"]] = relationship(
+    positions: Mapped[list[Position]] = relationship(
         back_populates="department",
     )
-    employees: Mapped[list["Employee"]] = relationship(
+    employees: Mapped[list[Employee]] = relationship(
         back_populates="department",
     )
 

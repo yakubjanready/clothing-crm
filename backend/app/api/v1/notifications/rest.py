@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_, select, update
@@ -26,9 +26,7 @@ router = APIRouter(prefix="/notifications")
 
 def _user_scope(stmt, user_id: uuid.UUID):
     """User'niki yoki broadcast (user_id IS NULL)."""
-    return stmt.where(
-        or_(Notification.user_id == user_id, Notification.user_id.is_(None))
-    )
+    return stmt.where(or_(Notification.user_id == user_id, Notification.user_id.is_(None)))
 
 
 @router.get("", response_model=Page[NotificationRead])
@@ -49,7 +47,10 @@ async def list_notifications(
     items, total, pages = await paginate(db, stmt, params)
     return Page[NotificationRead](
         items=[NotificationRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -58,10 +59,7 @@ async def unread_count(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> UnreadCount:
-    stmt = (
-        select(func.count(Notification.id))
-        .where(Notification.read_at.is_(None))
-    )
+    stmt = select(func.count(Notification.id)).where(Notification.read_at.is_(None))
     stmt = _user_scope(stmt, user.id)
     n = (await db.execute(stmt)).scalar_one()
     return UnreadCount(unread=n)
@@ -77,7 +75,7 @@ async def mark_read(
     if n is None or (n.user_id is not None and n.user_id != user.id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Notifikatsiya topilmadi")
     if n.read_at is None:
-        n.read_at = datetime.now(timezone.utc)
+        n.read_at = datetime.now(UTC)
     await db.commit()
     await db.refresh(n)
     return NotificationRead.model_validate(n)
@@ -88,7 +86,7 @@ async def mark_all_read(
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
 ) -> UnreadCount:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     await db.execute(
         update(Notification)
         .where(
@@ -102,9 +100,7 @@ async def mark_all_read(
 
 
 # Admin: qo'lda yaratish (test/eslatma maqsadi uchun)
-@router.post(
-    "", response_model=NotificationRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("", response_model=NotificationRead, status_code=status.HTTP_201_CREATED)
 async def create_notification(
     body: NotificationCreate,
     request: Request,
@@ -121,9 +117,13 @@ async def create_notification(
         data=body.data,
     )
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type="notification", entity_id=n.id,
-        changes={"type": body.type, "title": body.title}, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type="notification",
+        entity_id=n.id,
+        changes={"type": body.type, "title": body.title},
+        request=request,
     )
     await db.commit()
     await db.refresh(n)

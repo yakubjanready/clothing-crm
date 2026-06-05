@@ -4,22 +4,13 @@ import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-import {
-  useProduct,
-  useProductVariants,
-  useUpdateProduct,
-} from "@/api/products";
+import { useProduct, useProductVariants, useUpdateProduct } from "@/api/products";
 import { DataTable, type Column } from "@/components/common/DataTable";
 import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { PageHeader } from "@/components/common/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 import { ImageDropzone } from "./ImageDropzone";
@@ -67,8 +58,7 @@ export function ProductDetailPage() {
     {
       key: "is_active",
       header: t("products.fields.is_active"),
-      render: (v) =>
-        v.is_active ? <Badge>✓</Badge> : <Badge variant="outline">—</Badge>,
+      render: (v) => (v.is_active ? <Badge>✓</Badge> : <Badge variant="outline">—</Badge>),
     },
   ];
 
@@ -112,21 +102,13 @@ export function ProductDetailPage() {
           <CardContent className="space-y-3 text-sm">
             <Row label={t("products.fields.sku_prefix")} value={data.sku_prefix} mono />
             <Row label={t("products.fields.slug")} value={data.slug} mono />
-            <Row
-              label={t("products.fields.gender")}
-              value={t(`products.gender.${data.gender}`)}
-            />
+            <Row label={t("products.fields.gender")} value={t(`products.gender.${data.gender}`)} />
             <Row label={t("products.fields.material")} value={data.material ?? "—"} />
-            <Row
-              label={t("products.fields.is_active")}
-              value={data.is_active ? "✓" : "—"}
-            />
+            <Row label={t("products.fields.is_active")} value={data.is_active ? "✓" : "—"} />
             {data.description && (
               <>
                 <Separator />
-                <p className="whitespace-pre-wrap text-muted-foreground">
-                  {data.description}
-                </p>
+                <p className="whitespace-pre-wrap text-muted-foreground">{data.description}</p>
               </>
             )}
           </CardContent>
@@ -155,11 +137,7 @@ export function ProductDetailPage() {
         </CardContent>
       </Card>
 
-      <VariantMatrixDialog
-        productId={data.id}
-        open={matrixOpen}
-        onOpenChange={setMatrixOpen}
-      />
+      <VariantMatrixDialog productId={data.id} open={matrixOpen} onOpenChange={setMatrixOpen} />
     </div>
   );
 }

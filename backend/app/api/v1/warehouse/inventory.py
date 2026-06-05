@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import select
@@ -47,7 +47,10 @@ async def list_inventories(
     items, total, pages = await paginate(db, stmt, params)
     return Page[InventoryRead](
         items=[InventoryRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -187,7 +190,7 @@ async def finalize_inventory(
         raise HTTPException(status.HTTP_409_CONFLICT, str(e)) from e
 
     inv.status = InventoryStatus.COMPLETED
-    inv.finished_at = datetime.now(timezone.utc)
+    inv.finished_at = datetime.now(UTC)
     await db.commit()
     return InventoryFinalizeResponse(
         inventory_id=inv.id, adjustments=adjustments, status=inv.status
@@ -212,7 +215,7 @@ async def cancel_inventory(
     if inv.status != InventoryStatus.IN_PROGRESS:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Holat {inv.status}")
     inv.status = InventoryStatus.CANCELLED
-    inv.finished_at = datetime.now(timezone.utc)
+    inv.finished_at = datetime.now(UTC)
     await db.commit()
     await db.refresh(inv, attribute_names=["items"])
     return InventoryRead.model_validate(inv)

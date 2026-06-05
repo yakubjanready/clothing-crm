@@ -36,7 +36,10 @@ async def list_invoices(
     items, total, pages = await paginate(db, stmt, params)
     return Page[InvoiceRead](
         items=[InvoiceRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 

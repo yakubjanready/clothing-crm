@@ -1,5 +1,6 @@
 """HR CRUD endpointlari uchun integratsion testlar (aiosqlite + fakeredis).
 Audit yozish va permission tekshirish ham shu yerda."""
+
 from __future__ import annotations
 
 import pytest
@@ -34,6 +35,7 @@ async def sales_headers(client: AsyncClient, sales_user: User) -> dict[str, str]
 
 # ============ Departments ============
 
+
 async def test_create_department_writes_audit(
     client: AsyncClient, admin_headers: dict[str, str], test_db: AsyncSession
 ) -> None:
@@ -49,10 +51,10 @@ async def test_create_department_writes_audit(
 
     # Audit
     logs = (
-        await test_db.execute(
-            select(ActivityLog).where(ActivityLog.entity_type == "department")
-        )
-    ).scalars().all()
+        (await test_db.execute(select(ActivityLog).where(ActivityLog.entity_type == "department")))
+        .scalars()
+        .all()
+    )
     assert len(logs) == 1
     assert logs[0].action == "create"
     assert logs[0].changes["name"] == "Sotuv"
@@ -61,12 +63,16 @@ async def test_create_department_writes_audit(
 async def test_department_parent_child_tree(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
-    parent = (await client.post(
-        "/api/v1/hr/departments", headers=admin_headers,
-        json={"name": "Bosh ofis", "code": "HQ"},
-    )).json()
+    parent = (
+        await client.post(
+            "/api/v1/hr/departments",
+            headers=admin_headers,
+            json={"name": "Bosh ofis", "code": "HQ"},
+        )
+    ).json()
     child = await client.post(
-        "/api/v1/hr/departments", headers=admin_headers,
+        "/api/v1/hr/departments",
+        headers=admin_headers,
         json={"name": "IT", "code": "IT", "parent_id": parent["id"]},
     )
     assert child.status_code == 201
@@ -85,10 +91,13 @@ async def test_department_parent_child_tree(
 async def test_department_self_parent_rejected(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
-    dept = (await client.post(
-        "/api/v1/hr/departments", headers=admin_headers,
-        json={"name": "Loop"},
-    )).json()
+    dept = (
+        await client.post(
+            "/api/v1/hr/departments",
+            headers=admin_headers,
+            json={"name": "Loop"},
+        )
+    ).json()
     resp = await client.patch(
         f"/api/v1/hr/departments/{dept['id']}",
         headers=admin_headers,
@@ -100,10 +109,13 @@ async def test_department_self_parent_rejected(
 async def test_department_soft_delete_and_restore(
     client: AsyncClient, admin_headers: dict[str, str], test_db: AsyncSession
 ) -> None:
-    dept = (await client.post(
-        "/api/v1/hr/departments", headers=admin_headers,
-        json={"name": "Temp"},
-    )).json()
+    dept = (
+        await client.post(
+            "/api/v1/hr/departments",
+            headers=admin_headers,
+            json={"name": "Temp"},
+        )
+    ).json()
 
     # delete
     d = await client.delete(f"/api/v1/hr/departments/{dept['id']}", headers=admin_headers)
@@ -115,7 +127,8 @@ async def test_department_soft_delete_and_restore(
 
     # include_deleted=true — bor
     listed_all = await client.get(
-        "/api/v1/hr/departments", headers=admin_headers,
+        "/api/v1/hr/departments",
+        headers=admin_headers,
         params={"include_deleted": "true"},
     )
     assert any(it["id"] == dept["id"] for it in listed_all.json()["items"])
@@ -127,15 +140,21 @@ async def test_department_soft_delete_and_restore(
     # audit izlari: create, soft_delete, restore
     actions = [
         l.action
-        for l in (await test_db.execute(
-            select(ActivityLog).where(ActivityLog.entity_type == "department")
-            .order_by(ActivityLog.created_at)
-        )).scalars().all()
+        for l in (
+            await test_db.execute(
+                select(ActivityLog)
+                .where(ActivityLog.entity_type == "department")
+                .order_by(ActivityLog.created_at)
+            )
+        )
+        .scalars()
+        .all()
     ]
     assert actions == ["create", "soft_delete", "restore"]
 
 
 # ============ Permissions ============
+
 
 async def test_sales_user_cannot_write_hr(
     client: AsyncClient, sales_headers: dict[str, str]
@@ -158,12 +177,13 @@ async def test_sales_user_cannot_read_audit(
 
 # ============ Positions ============
 
+
 async def test_create_position_with_salary(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
-    dept = (await client.post(
-        "/api/v1/hr/departments", headers=admin_headers, json={"name": "Sotuv"}
-    )).json()
+    dept = (
+        await client.post("/api/v1/hr/departments", headers=admin_headers, json={"name": "Sotuv"})
+    ).json()
 
     resp = await client.post(
         "/api/v1/hr/positions",
@@ -183,11 +203,13 @@ async def test_create_position_with_salary(
 async def test_update_position_salary_logs_diff(
     client: AsyncClient, admin_headers: dict[str, str], test_db: AsyncSession
 ) -> None:
-    pos = (await client.post(
-        "/api/v1/hr/positions",
-        headers=admin_headers,
-        json={"name": "Operator", "base_salary": "3000000"},
-    )).json()
+    pos = (
+        await client.post(
+            "/api/v1/hr/positions",
+            headers=admin_headers,
+            json={"name": "Operator", "base_salary": "3000000"},
+        )
+    ).json()
 
     upd = await client.patch(
         f"/api/v1/hr/positions/{pos['id']}",
@@ -196,10 +218,13 @@ async def test_update_position_salary_logs_diff(
     )
     assert upd.status_code == 200
 
-    log = (await test_db.execute(
-        select(ActivityLog)
-        .where(ActivityLog.entity_type == "position", ActivityLog.action == "update")
-    )).scalar_one()
+    log = (
+        await test_db.execute(
+            select(ActivityLog).where(
+                ActivityLog.entity_type == "position", ActivityLog.action == "update"
+            )
+        )
+    ).scalar_one()
     assert "base_salary" in log.changes
     # jsonable_encoder Decimal'ni float'ga aylantiradi
     assert float(log.changes["base_salary"]["old"]) == 3000000.0
@@ -208,18 +233,19 @@ async def test_update_position_salary_logs_diff(
 
 # ============ Employees ============
 
+
 @pytest.fixture
-async def dept_and_pos(
-    client: AsyncClient, admin_headers: dict[str, str]
-) -> tuple[str, str]:
-    d = (await client.post(
-        "/api/v1/hr/departments", headers=admin_headers, json={"name": "Magazin"}
-    )).json()
-    p = (await client.post(
-        "/api/v1/hr/positions",
-        headers=admin_headers,
-        json={"name": "Sotuvchi", "base_salary": "4000000", "department_id": d["id"]},
-    )).json()
+async def dept_and_pos(client: AsyncClient, admin_headers: dict[str, str]) -> tuple[str, str]:
+    d = (
+        await client.post("/api/v1/hr/departments", headers=admin_headers, json={"name": "Magazin"})
+    ).json()
+    p = (
+        await client.post(
+            "/api/v1/hr/positions",
+            headers=admin_headers,
+            json={"name": "Sotuvchi", "base_salary": "4000000", "department_id": d["id"]},
+        )
+    ).json()
     return d["id"], p["id"]
 
 
@@ -254,12 +280,14 @@ async def test_employee_filter_by_status_and_search(
     dept_id, pos_id = dept_and_pos
 
     payload = {
-        "department_id": dept_id, "position_id": pos_id, "status": "active",
+        "department_id": dept_id,
+        "position_id": pos_id,
+        "status": "active",
     }
     for fn, ln, em, st in [
         ("Alisher", "Karimov", "a@example.com", "active"),
-        ("Bobur",   "Karimov", "b@example.com", "on_leave"),
-        ("Diyor",   "Yo'ldoshev", "d@example.com", "active"),
+        ("Bobur", "Karimov", "b@example.com", "on_leave"),
+        ("Diyor", "Yo'ldoshev", "d@example.com", "active"),
     ]:
         await client.post(
             "/api/v1/hr/employees",
@@ -298,22 +326,27 @@ async def test_employee_pagination(
                 "first_name": f"Xodim{i:02d}",
                 "last_name": "Test",
                 "email": f"u{i:02d}@example.com",
-                "department_id": dept_id, "position_id": pos_id,
+                "department_id": dept_id,
+                "position_id": pos_id,
             },
         )
 
-    p1 = (await client.get(
-        "/api/v1/hr/employees",
-        headers=admin_headers,
-        params={"page": 1, "page_size": 5},
-    )).json()
+    p1 = (
+        await client.get(
+            "/api/v1/hr/employees",
+            headers=admin_headers,
+            params={"page": 1, "page_size": 5},
+        )
+    ).json()
     assert p1["total"] == 12 and p1["pages"] == 3 and len(p1["items"]) == 5
 
-    p3 = (await client.get(
-        "/api/v1/hr/employees",
-        headers=admin_headers,
-        params={"page": 3, "page_size": 5},
-    )).json()
+    p3 = (
+        await client.get(
+            "/api/v1/hr/employees",
+            headers=admin_headers,
+            params={"page": 3, "page_size": 5},
+        )
+    ).json()
     assert len(p3["items"]) == 2
 
 
@@ -325,7 +358,8 @@ async def test_employee_invalid_department_400(
         "/api/v1/hr/employees",
         headers=admin_headers,
         json={
-            "first_name": "X", "last_name": "Y",
+            "first_name": "X",
+            "last_name": "Y",
             "department_id": "00000000-0000-0000-0000-000000000000",
             "position_id": pos_id,
         },
@@ -335,15 +369,12 @@ async def test_employee_invalid_department_400(
 
 # ============ Audit log endpoint ============
 
+
 async def test_audit_log_endpoint_filters(
     client: AsyncClient, admin_headers: dict[str, str]
 ) -> None:
-    await client.post(
-        "/api/v1/hr/departments", headers=admin_headers, json={"name": "A"}
-    )
-    await client.post(
-        "/api/v1/hr/departments", headers=admin_headers, json={"name": "B"}
-    )
+    await client.post("/api/v1/hr/departments", headers=admin_headers, json={"name": "A"})
+    await client.post("/api/v1/hr/departments", headers=admin_headers, json={"name": "B"})
     resp = await client.get(
         "/api/v1/hr/audit-logs",
         headers=admin_headers,
@@ -355,10 +386,13 @@ async def test_audit_log_endpoint_filters(
 
 # ============ Direct model checks ============
 
+
 def test_models_loaded_correctly() -> None:
     assert Department.__tablename__ == "departments"
     assert Position.__tablename__ == "positions"
     assert "base_salary" in {c.name for c in Position.__table__.columns}
-    assert "photo_url" in {c.name for c in __import__("app.models", fromlist=["Employee"]).Employee.__table__.columns}
+    assert "photo_url" in {
+        c.name for c in __import__("app.models", fromlist=["Employee"]).Employee.__table__.columns
+    }
     assert EmployeeStatus.ACTIVE == "active"
     assert ActivityLog.__tablename__ == "activity_logs"

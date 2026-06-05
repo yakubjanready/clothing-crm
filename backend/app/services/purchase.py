@@ -2,10 +2,11 @@
 
 Funksiyalar `db.flush` qiladi, commit chaqiruvchida (router).
 """
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
@@ -28,6 +29,7 @@ if TYPE_CHECKING:
 
 # ---------- Xatolar ----------
 
+
 class PurchaseError(Exception):
     pass
 
@@ -43,16 +45,14 @@ class PurchaseValidationError(PurchaseError):
 # ---------- State machine ----------
 
 ALLOWED_TRANSITIONS: dict[PurchaseOrderStatus, set[PurchaseOrderStatus]] = {
-    PurchaseOrderStatus.DRAFT:     {PurchaseOrderStatus.RECEIVED, PurchaseOrderStatus.CANCELLED},
-    PurchaseOrderStatus.RECEIVED:  {PurchaseOrderStatus.PAID},
-    PurchaseOrderStatus.PAID:      set(),
+    PurchaseOrderStatus.DRAFT: {PurchaseOrderStatus.RECEIVED, PurchaseOrderStatus.CANCELLED},
+    PurchaseOrderStatus.RECEIVED: {PurchaseOrderStatus.PAID},
+    PurchaseOrderStatus.PAID: set(),
     PurchaseOrderStatus.CANCELLED: set(),
 }
 
 
-def assert_transition(
-    current: PurchaseOrderStatus, target: PurchaseOrderStatus
-) -> None:
+def assert_transition(current: PurchaseOrderStatus, target: PurchaseOrderStatus) -> None:
     allowed = ALLOWED_TRANSITIONS.get(current, set())
     if target not in allowed:
         raise InvalidPurchaseTransitionError(
@@ -63,16 +63,17 @@ def assert_transition(
 
 # ---------- Yaratish ----------
 
+
 async def _load_variants_map(
     db: AsyncSession, variant_ids: list[uuid.UUID]
 ) -> dict[uuid.UUID, ProductVariant]:
     if not variant_ids:
         return {}
     rows = (
-        await db.execute(
-            select(ProductVariant).where(ProductVariant.id.in_(variant_ids))
-        )
-    ).scalars().all()
+        (await db.execute(select(ProductVariant).where(ProductVariant.id.in_(variant_ids))))
+        .scalars()
+        .all()
+    )
     return {v.id: v for v in rows}
 
 
@@ -159,8 +160,9 @@ async def replace_items(
 
 # ---------- State amallar ----------
 
+
 async def receive_purchase(
-    db: AsyncSession, *, po: PurchaseOrder, actor: "User | None"
+    db: AsyncSession, *, po: PurchaseOrder, actor: User | None
 ) -> PurchaseOrder:
     """DRAFT → RECEIVED. Har item uchun:
     - stock += quantity (IN movement)
@@ -189,14 +191,19 @@ async def receive_purchase(
 
     supplier = await db.get(Supplier, po.supplier_id)
     from app.services.customer import adjust_supplier_debt
+
     await adjust_supplier_debt(
-        db, supplier=supplier, delta=po.total, actor=actor,
+        db,
+        supplier=supplier,
+        delta=po.total,
+        actor=actor,
         reason=f"PO {po.number} receive",
-        reference_type="purchase_order", reference_id=po.id,
+        reference_type="purchase_order",
+        reference_id=po.id,
     )
 
     po.status = PurchaseOrderStatus.RECEIVED
-    po.received_at = datetime.now(timezone.utc)
+    po.received_at = datetime.now(UTC)
     await db.flush()
     return po
 
@@ -207,16 +214,14 @@ async def pay_supplier(
     po: PurchaseOrder,
     amount: Decimal,
     method: PaymentMethod,
-    actor: "User | None",
+    actor: User | None,
     notes: str | None = None,
 ) -> tuple[PurchaseOrder, SupplierPayment]:
     """RECEIVED → (qisman to'lov: RECEIVED qoladi; to'liq: PAID).
     Supplier.current_debt -= amount.
     """
     if po.status != PurchaseOrderStatus.RECEIVED:
-        raise InvalidPurchaseTransitionError(
-            f"PO {po.status} statusda — to'lov qabul qilinmaydi"
-        )
+        raise InvalidPurchaseTransitionError(f"PO {po.status} statusda — to'lov qabul qilinmaydi")
     if amount <= 0:
         raise PurchaseValidationError("amount > 0 bo'lishi kerak")
     remaining = po.total - po.paid_amount
@@ -227,10 +232,15 @@ async def pay_supplier(
 
     supplier = await db.get(Supplier, po.supplier_id)
     from app.services.customer import adjust_supplier_debt
+
     await adjust_supplier_debt(
-        db, supplier=supplier, delta=-amount, actor=actor,
+        db,
+        supplier=supplier,
+        delta=-amount,
+        actor=actor,
         reason=f"PO {po.number} payment",
-        reference_type="purchase_order", reference_id=po.id,
+        reference_type="purchase_order",
+        reference_id=po.id,
     )
 
     payment = SupplierPayment(
@@ -245,7 +255,7 @@ async def pay_supplier(
     po.paid_amount = po.paid_amount + amount
     if po.paid_amount >= po.total:
         po.status = PurchaseOrderStatus.PAID
-        po.paid_at = datetime.now(timezone.utc)
+        po.paid_at = datetime.now(UTC)
 
     await db.flush()
     return po, payment
@@ -255,23 +265,22 @@ async def cancel_purchase(
     db: AsyncSession,
     *,
     po: PurchaseOrder,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
 ) -> PurchaseOrder:
     """Bekor qilish. DRAFT'dan tashqari holatda ruxsat etilmaydi
     (RECEIVED'dan qaytarish alohida workflow talab qiladi)."""
     if po.status != PurchaseOrderStatus.DRAFT:
-        raise InvalidPurchaseTransitionError(
-            f"PO {po.status} — faqat DRAFT bekor qilinadi"
-        )
+        raise InvalidPurchaseTransitionError(f"PO {po.status} — faqat DRAFT bekor qilinadi")
     po.status = PurchaseOrderStatus.CANCELLED
-    po.cancelled_at = datetime.now(timezone.utc)
+    po.cancelled_at = datetime.now(UTC)
     po.cancel_reason = reason
     await db.flush()
     return po
 
 
 # ---------- Reload helper (router uchun) ----------
+
 
 async def reload_with_items(db: AsyncSession, po_id: uuid.UUID) -> PurchaseOrder:
     return (
@@ -284,9 +293,15 @@ async def reload_with_items(db: AsyncSession, po_id: uuid.UUID) -> PurchaseOrder
 
 
 __all__ = [
-    "PurchaseError", "InvalidPurchaseTransitionError", "PurchaseValidationError",
-    "ALLOWED_TRANSITIONS", "assert_transition",
-    "build_draft_purchase", "replace_items",
-    "receive_purchase", "pay_supplier", "cancel_purchase",
+    "ALLOWED_TRANSITIONS",
+    "InvalidPurchaseTransitionError",
+    "PurchaseError",
+    "PurchaseValidationError",
+    "assert_transition",
+    "build_draft_purchase",
+    "cancel_purchase",
+    "pay_supplier",
+    "receive_purchase",
     "reload_with_items",
+    "replace_items",
 ]

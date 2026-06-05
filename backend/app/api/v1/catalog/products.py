@@ -88,7 +88,10 @@ async def list_products(
     items, total, pages = await paginate(db, stmt, params)
     return Page[ProductRead](
         items=[ProductRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -100,9 +103,7 @@ async def get_product(
 ) -> ProductRead:
     p = (
         await db.execute(
-            select(Product)
-            .where(Product.id == product_id)
-            .options(selectinload(Product.variants))
+            select(Product).where(Product.id == product_id).options(selectinload(Product.variants))
         )
     ).scalar_one_or_none()
     if p is None or p.deleted_at is not None:
@@ -134,8 +135,13 @@ async def create_product(
         raise HTTPException(status.HTTP_409_CONFLICT, "slug yoki sku_prefix band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=p.id, changes=data, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=p.id,
+        changes=data,
+        request=request,
     )
     await db.commit()
     await db.refresh(p)
@@ -162,8 +168,15 @@ async def update_product(
     )
 
     allowed = {
-        "name", "slug", "description", "material", "gender",
-        "images", "is_active", "category_id", "brand_id",
+        "name",
+        "slug",
+        "description",
+        "material",
+        "gender",
+        "images",
+        "is_active",
+        "category_id",
+        "brand_id",
     }
     changes = diff_attrs(p, patch, allowed)
     for f, v in patch.items():
@@ -172,8 +185,13 @@ async def update_product(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=p.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=p.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -196,8 +214,12 @@ async def soft_delete_product(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Mahsulot topilmadi")
     p.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=p.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=p.id,
+        request=request,
     )
     await db.commit()
 
@@ -216,8 +238,12 @@ async def restore_product(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Mahsulot o'chirilmagan")
     p.restore()
     await log_activity(
-        db, actor=actor, action=AuditAction.RESTORE,
-        entity_type=ENTITY, entity_id=p.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.RESTORE,
+        entity_type=ENTITY,
+        entity_id=p.id,
+        request=request,
     )
     await db.commit()
     await db.refresh(p)

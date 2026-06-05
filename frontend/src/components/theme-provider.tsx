@@ -19,18 +19,16 @@ function applyTheme(t: "light" | "dark") {
 
 function resolveTheme(t: Theme): "light" | "dark" {
   if (t === "system") {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
   return t;
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    const stored = (typeof localStorage !== "undefined"
-      ? localStorage.getItem(STORAGE_KEY)
-      : null) as Theme | null;
+    const stored = (
+      typeof localStorage !== "undefined" ? localStorage.getItem(STORAGE_KEY) : null
+    ) as Theme | null;
     return stored ?? "system";
   });
 

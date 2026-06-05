@@ -28,9 +28,7 @@ class Employee(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
 
     first_name: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
     last_name: Mapped[str] = mapped_column(String(128), nullable=False, index=True)
-    email: Mapped[str | None] = mapped_column(
-        String(255), unique=True, nullable=True, index=True
-    )
+    email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True, index=True)
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     photo_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
@@ -62,9 +60,9 @@ class Employee(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         unique=True,
     )
 
-    department: Mapped["Department"] = relationship(back_populates="employees")
-    position: Mapped["Position"] = relationship(back_populates="employees")
-    user: Mapped["User | None"] = relationship()
+    department: Mapped[Department] = relationship(back_populates="employees")
+    position: Mapped[Position] = relationship(back_populates="employees")
+    user: Mapped[User | None] = relationship()
 
     @property
     def full_name(self) -> str:

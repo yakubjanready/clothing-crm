@@ -1,4 +1,5 @@
 """Katalog uchun yordamchi funksiyalar — slug, SKU avto-generatsiya."""
+
 from __future__ import annotations
 
 import re

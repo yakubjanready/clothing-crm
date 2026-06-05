@@ -27,14 +27,11 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
-      login: (access, refresh, user) =>
-        set({ accessToken: access, refreshToken: refresh, user }),
-      setTokens: (access, refresh) =>
-        set({ accessToken: access, refreshToken: refresh }),
+      login: (access, refresh, user) => set({ accessToken: access, refreshToken: refresh, user }),
+      setTokens: (access, refresh) => set({ accessToken: access, refreshToken: refresh }),
       setUser: (user) => set({ user }),
       logout: () => set({ user: null, accessToken: null, refreshToken: null }),
-      hasRole: (name) =>
-        get().user?.roles.some((r) => r.name === name) ?? false,
+      hasRole: (name) => get().user?.roles.some((r) => r.name === name) ?? false,
       permissions: () => new Set<string>(), // backend /me kengaytirsa to'ldiriladi
     }),
     {
@@ -48,5 +45,4 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-export const useIsAuthenticated = () =>
-  useAuthStore((s) => Boolean(s.accessToken && s.user));
+export const useIsAuthenticated = () => useAuthStore((s) => Boolean(s.accessToken && s.user));

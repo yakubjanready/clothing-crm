@@ -1,6 +1,7 @@
 """Moliyaviy tranzaksiyalar — Account balansi, FinancePayment, DebtRecord.
 Funksiyalar `db.flush` qiladi; commit chaqiruvchida (router).
 """
+
 from __future__ import annotations
 
 import uuid
@@ -45,6 +46,7 @@ async def _load_active_account(db: AsyncSession, account_id: uuid.UUID) -> Accou
 
 # ---------- Income / Expense ----------
 
+
 async def record_income(
     db: AsyncSession,
     *,
@@ -54,7 +56,7 @@ async def record_income(
     description: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
-    actor: "User | None" = None,
+    actor: User | None = None,
 ) -> FinancePayment:
     if amount <= 0:
         raise FinanceError("amount > 0 bo'lishi kerak")
@@ -86,15 +88,14 @@ async def record_expense(
     description: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
-    actor: "User | None" = None,
+    actor: User | None = None,
 ) -> FinancePayment:
     if amount <= 0:
         raise FinanceError("amount > 0 bo'lishi kerak")
     acc = await _load_active_account(db, account_id)
     if acc.balance < amount:
         raise InsufficientFundsError(
-            f"'{acc.name}' hisobida yetarli mablag' yo'q "
-            f"(balance={acc.balance}, kerak={amount})"
+            f"'{acc.name}' hisobida yetarli mablag' yo'q (balance={acc.balance}, kerak={amount})"
         )
 
     payment = FinancePayment(
@@ -116,13 +117,14 @@ async def record_expense(
 
 # ---------- Transfer ----------
 
+
 async def transfer_funds(
     db: AsyncSession,
     *,
     from_account_id: uuid.UUID,
     to_account_id: uuid.UUID,
     amount: Decimal,
-    actor: "User | None",
+    actor: User | None,
     description: str | None = None,
 ) -> tuple[FinancePayment, FinancePayment]:
     """Kassalararo o'tkazma — atomik. Ikkala account ham yangilanadi va
@@ -175,6 +177,7 @@ async def transfer_funds(
 
 # ---------- Debt ledger ----------
 
+
 async def record_debt_change(
     db: AsyncSession,
     *,
@@ -185,7 +188,7 @@ async def record_debt_change(
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
-    actor: "User | None" = None,
+    actor: User | None = None,
 ) -> DebtRecord | None:
     """delta != 0 bo'lsa DebtRecord yozadi. delta musbat=qarz oshdi,
     manfiy=qarz kamaydi."""
@@ -209,7 +212,11 @@ async def record_debt_change(
 
 
 __all__ = [
-    "FinanceError", "InsufficientFundsError", "InvalidTransferError",
-    "record_income", "record_expense", "transfer_funds",
+    "FinanceError",
+    "InsufficientFundsError",
+    "InvalidTransferError",
     "record_debt_change",
+    "record_expense",
+    "record_income",
+    "transfer_funds",
 ]

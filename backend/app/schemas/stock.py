@@ -23,6 +23,7 @@ class StockMinUpdate(BaseModel):
 
 # --- Movement operatsiyalari ---
 
+
 class _MovementBase(BaseModel):
     variant_id: uuid.UUID
     quantity: int = Field(gt=0)

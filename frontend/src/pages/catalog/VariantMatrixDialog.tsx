@@ -60,7 +60,12 @@ export function VariantMatrixDialog({ productId, open, onOpenChange }: Props) {
 
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { sizes: "S, M, L", colors: "Qora #000000, Oq #FFFFFF", wholesale_price: "0", retail_price: "0" },
+    defaultValues: {
+      sizes: "S, M, L",
+      colors: "Qora #000000, Oq #FFFFFF",
+      wholesale_price: "0",
+      retail_price: "0",
+    },
   });
 
   return (
@@ -76,7 +81,10 @@ export function VariantMatrixDialog({ productId, open, onOpenChange }: Props) {
             onSubmit={form.handleSubmit(async (v) => {
               try {
                 const result = await create.mutateAsync({
-                  sizes: v.sizes.split(",").map((s) => s.trim()).filter(Boolean),
+                  sizes: v.sizes
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean),
                   colors: parseColors(v.colors),
                   wholesale_price: v.wholesale_price,
                   retail_price: v.retail_price,
@@ -146,11 +154,7 @@ export function VariantMatrixDialog({ productId, open, onOpenChange }: Props) {
               />
             </div>
             <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {t("common.cancel")}
               </Button>
               <Button type="submit" disabled={create.isPending}>

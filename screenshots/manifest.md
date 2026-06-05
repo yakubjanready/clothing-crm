@@ -109,3 +109,12 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | products_ui__faza13__01-vitest-green.png  | 13 | products_ui | 11 ta vitest yashil (App: 2, auth: 4, product-schema Zod: 5) |
 | products_ui__faza13__02-build-success.png | 13 | products_ui | Vite build: 1887 modul, 718KB JS (gzip 219KB), 22KB CSS |
 | products_ui__faza13__03-tree.png          | 13 | products_ui | Yangi UI fayllari: api/{catalog,products,types}, pages/catalog/{List,Detail,Create,Edit,Form,Dropzone,MatrixDialog}, ui/{dialog,select,badge,textarea,form}, common/{Pagination,SearchInput,ConfirmDialog} |
+
+## Faza 14 — Quality (coverage >80%, ruff+black+mypy, ESLint+Prettier, pre-commit, Makefile)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| quality__faza14__01-backend-coverage.png | 14 | quality | Backend coverage 80.7% (fail_under=80), 214 ta test yashil (asosiy logika: services 78-100%, schemas 100%, utils 100%) |
+| quality__faza14__02-backend-lint.png     | 14 | quality | ruff check (187 ta xato fix'landi) va black --check yashil |
+| quality__faza14__03-frontend-test.png    | 14 | quality | Frontend vitest (11 passed) + @vitest/coverage-v8 sozlanildi (stores 96.55%, schemas 100%, lib 100%) |
+| quality__faza14__04-frontend-lint.png    | 14 | quality | ESLint (typescript-eslint + react + react-hooks, flat config) va Prettier --check yashil |

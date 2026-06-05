@@ -42,9 +42,7 @@ class PurchaseOrder(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         CheckConstraint("paid_amount >= 0", name="ck_po_paid_nonneg"),
     )
 
-    number: Mapped[str] = mapped_column(
-        String(32), unique=True, nullable=False, index=True
-    )
+    number: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
     status: Mapped[PurchaseOrderStatus] = mapped_column(
         String(16), nullable=False, default=PurchaseOrderStatus.DRAFT, index=True
     )
@@ -68,10 +66,16 @@ class PurchaseOrder(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     )
 
     total: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
     paid_amount: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -81,15 +85,15 @@ class PurchaseOrder(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     cancelled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    supplier: Mapped["Supplier"] = relationship(back_populates="purchase_orders")
-    warehouse: Mapped["Warehouse"] = relationship()
-    manager: Mapped["User | None"] = relationship()
-    items: Mapped[list["PurchaseItem"]] = relationship(
+    supplier: Mapped[Supplier] = relationship(back_populates="purchase_orders")
+    warehouse: Mapped[Warehouse] = relationship()
+    manager: Mapped[User | None] = relationship()
+    items: Mapped[list[PurchaseItem]] = relationship(
         back_populates="purchase_order",
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    payments: Mapped[list["SupplierPayment"]] = relationship(
+    payments: Mapped[list[SupplierPayment]] = relationship(
         back_populates="purchase_order",
         cascade="all, delete-orphan",
     )

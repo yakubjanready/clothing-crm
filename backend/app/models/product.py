@@ -30,9 +30,7 @@ class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     slug: Mapped[str] = mapped_column(String(320), unique=True, nullable=False, index=True)
-    sku_prefix: Mapped[str] = mapped_column(
-        String(32), unique=True, nullable=False, index=True
-    )
+    sku_prefix: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     material: Mapped[str | None] = mapped_column(String(128), nullable=True)
     gender: Mapped[Gender] = mapped_column(
@@ -58,13 +56,13 @@ class Product(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         index=True,
     )
 
-    category: Mapped["Category"] = relationship(back_populates="products")
-    brand: Mapped["Brand | None"] = relationship(back_populates="products")
-    variants: Mapped[list["ProductVariant"]] = relationship(
+    category: Mapped[Category] = relationship(back_populates="products")
+    brand: Mapped[Brand | None] = relationship(back_populates="products")
+    variants: Mapped[list[ProductVariant]] = relationship(
         back_populates="product",
         cascade="all, delete-orphan",
     )
-    attribute_values: Mapped[list["AttributeValue"]] = relationship(
+    attribute_values: Mapped[list[AttributeValue]] = relationship(
         back_populates="product",
         cascade="all, delete-orphan",
     )

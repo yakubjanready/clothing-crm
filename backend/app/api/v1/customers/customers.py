@@ -37,9 +37,7 @@ async def list_customers(
     price_type: PriceType | None = Query(default=None),
     manager_id: uuid.UUID | None = Query(default=None),
     is_active: bool | None = Query(default=None),
-    has_debt: bool | None = Query(
-        default=None, description="True → current_debt > 0"
-    ),
+    has_debt: bool | None = Query(default=None, description="True → current_debt > 0"),
     over_limit: bool | None = Query(
         default=None,
         description="True → current_debt >= credit_limit (kredit limit>0)",
@@ -78,7 +76,10 @@ async def list_customers(
     items, total, pages = await paginate(db, stmt, params)
     return Page[CustomerRead](
         items=[CustomerRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -110,8 +111,13 @@ async def create_customer(
         raise HTTPException(status.HTTP_409_CONFLICT, "INN band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=c.id, changes=body.model_dump(), request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=c.id,
+        changes=body.model_dump(),
+        request=request,
     )
     await db.commit()
     await db.refresh(c)
@@ -132,8 +138,18 @@ async def update_customer(
 
     patch = body.model_dump(exclude_unset=True)
     allowed = {
-        "name", "legal_type", "inn", "phone", "email", "address",
-        "segment", "price_type", "credit_limit", "manager_id", "notes", "is_active",
+        "name",
+        "legal_type",
+        "inn",
+        "phone",
+        "email",
+        "address",
+        "segment",
+        "price_type",
+        "credit_limit",
+        "manager_id",
+        "notes",
+        "is_active",
     }
     changes = diff_attrs(c, patch, allowed)
     for f, v in patch.items():
@@ -142,8 +158,13 @@ async def update_customer(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=c.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=c.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -166,8 +187,12 @@ async def soft_delete_customer(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Mijoz topilmadi")
     c.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=c.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=c.id,
+        request=request,
     )
     await db.commit()
 
@@ -186,8 +211,12 @@ async def restore_customer(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Mijoz o'chirilmagan")
     c.restore()
     await log_activity(
-        db, actor=actor, action=AuditAction.RESTORE,
-        entity_type=ENTITY, entity_id=c.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.RESTORE,
+        entity_type=ENTITY,
+        entity_id=c.id,
+        request=request,
     )
     await db.commit()
     await db.refresh(c)

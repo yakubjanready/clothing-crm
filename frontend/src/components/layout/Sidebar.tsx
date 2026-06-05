@@ -56,10 +56,7 @@ function NavGroup({ item }: { item: NavItem }) {
           {t(item.i18nKey)}
         </span>
         <ChevronDown
-          className={cn(
-            "h-4 w-4 shrink-0 transition-transform",
-            open && "rotate-180",
-          )}
+          className={cn("h-4 w-4 shrink-0 transition-transform", open && "rotate-180")}
         />
       </button>
       {open && item.children && (
@@ -90,7 +87,11 @@ export function SidebarContent() {
       <Separator className="mb-2" />
       <div className="flex-1 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map((item) =>
-          item.children ? <NavGroup key={item.to} item={item} /> : <NavLeaf key={item.to} item={item} />,
+          item.children ? (
+            <NavGroup key={item.to} item={item} />
+          ) : (
+            <NavLeaf key={item.to} item={item} />
+          ),
         )}
       </div>
     </nav>

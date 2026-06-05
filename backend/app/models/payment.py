@@ -24,9 +24,7 @@ class PaymentMethod(StrEnum):
 
 class Payment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     __tablename__ = "payments"
-    __table_args__ = (
-        CheckConstraint("amount > 0", name="ck_payment_amount_positive"),
-    )
+    __table_args__ = (CheckConstraint("amount > 0", name="ck_payment_amount_positive"),)
 
     order_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -45,8 +43,8 @@ class Payment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
     )
 
-    order: Mapped["Order"] = relationship(back_populates="payments")
-    actor: Mapped["User | None"] = relationship()
+    order: Mapped[Order] = relationship(back_populates="payments")
+    actor: Mapped[User | None] = relationship()
 
     def __repr__(self) -> str:
         return f"<Payment {self.method} amount={self.amount}>"

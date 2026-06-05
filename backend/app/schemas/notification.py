@@ -11,13 +11,12 @@ from app.models.notification import NotificationSeverity, NotificationType
 
 class NotificationCreate(BaseModel):
     """Admin tomonidan qo'lda yaratish (testlar/eslatma uchun)."""
+
     type: NotificationType = NotificationType.INFO
     severity: NotificationSeverity = NotificationSeverity.INFO
     title: str = Field(min_length=1, max_length=255)
     message: str = Field(min_length=1, max_length=1024)
-    user_id: uuid.UUID | None = Field(
-        default=None, description="None bo'lsa — broadcast"
-    )
+    user_id: uuid.UUID | None = Field(default=None, description="None bo'lsa — broadcast")
     data: dict[str, Any] | None = None
 
 

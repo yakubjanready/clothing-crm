@@ -43,7 +43,9 @@ class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin)
     image_url: Mapped[str | None] = mapped_column(String(512), nullable=True)
 
     cost_price: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
         server_default=text("0"),
     )
     wholesale_price: Mapped[Decimal] = mapped_column(
@@ -57,7 +59,7 @@ class ProductVariant(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin)
         Boolean, nullable=False, default=True, server_default=text("true")
     )
 
-    product: Mapped["Product"] = relationship(back_populates="variants")
+    product: Mapped[Product] = relationship(back_populates="variants")
 
     def __repr__(self) -> str:
         return f"<Variant {self.sku} {self.size}/{self.color}>"

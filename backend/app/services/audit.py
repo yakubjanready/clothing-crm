@@ -1,4 +1,5 @@
 """Audit yozish — har bir CRUD amalini ActivityLog'ga yozadi."""
+
 from __future__ import annotations
 
 import uuid
@@ -41,9 +42,7 @@ async def log_activity(
     return log
 
 
-def diff_attrs(
-    obj: Any, patch: dict[str, Any], allowed: set[str]
-) -> dict[str, dict[str, Any]]:
+def diff_attrs(obj: Any, patch: dict[str, Any], allowed: set[str]) -> dict[str, dict[str, Any]]:
     """`obj`'ning hozirgi qiymatlari va `patch` ichidagi yangi qiymatlar farqi.
     Faqat `allowed` ichidagi maydonlar tekshiriladi.
     """

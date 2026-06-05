@@ -1,4 +1,5 @@
 """/orders, /invoices, /returns endpointlari uchun integratsion testlar."""
+
 from __future__ import annotations
 
 import uuid as _uuid
@@ -11,12 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.customer import Customer
 from app.models.order import Order, OrderStatus
-from app.models.order_return import Return, ReturnStatus
 from app.models.stock import Stock
 from app.models.user import User
 
-
 # ---- Fixtures ----
+
 
 @pytest.fixture
 async def admin_headers(client: AsyncClient, admin_user: User) -> dict[str, str]:
@@ -37,69 +37,84 @@ async def sales_headers(client: AsyncClient, sales_user: User) -> dict[str, str]
 
 
 @pytest.fixture
-async def catalog_setup(
-    client: AsyncClient, admin_headers: dict[str, str]
-) -> tuple[str, str]:
+async def catalog_setup(client: AsyncClient, admin_headers: dict[str, str]) -> tuple[str, str]:
     """1 ta kategoriya + 1 mahsulot + 1 variant (narx 10000)."""
-    cat = (await client.post(
-        "/api/v1/categories", headers=admin_headers, json={"name": "Mayka"}
-    )).json()
-    prod = (await client.post(
-        "/api/v1/products", headers=admin_headers,
-        json={"name": "Klassik", "category_id": cat["id"]},
-    )).json()
-    var = (await client.post(
-        f"/api/v1/products/{prod['id']}/variants", headers=admin_headers,
-        json={"size": "M", "color": "Qora",
-              "wholesale_price": "10000", "retail_price": "15000"},
-    )).json()
+    cat = (
+        await client.post("/api/v1/categories", headers=admin_headers, json={"name": "Mayka"})
+    ).json()
+    prod = (
+        await client.post(
+            "/api/v1/products",
+            headers=admin_headers,
+            json={"name": "Klassik", "category_id": cat["id"]},
+        )
+    ).json()
+    var = (
+        await client.post(
+            f"/api/v1/products/{prod['id']}/variants",
+            headers=admin_headers,
+            json={
+                "size": "M",
+                "color": "Qora",
+                "wholesale_price": "10000",
+                "retail_price": "15000",
+            },
+        )
+    ).json()
     return prod["id"], var["id"]
 
 
 @pytest.fixture
-async def warehouse_id(
-    client: AsyncClient, admin_headers: dict[str, str]
-) -> str:
-    w = (await client.post(
-        "/api/v1/warehouses", headers=admin_headers,
-        json={"name": "Markaz", "code": "MAIN"},
-    )).json()
+async def warehouse_id(client: AsyncClient, admin_headers: dict[str, str]) -> str:
+    w = (
+        await client.post(
+            "/api/v1/warehouses",
+            headers=admin_headers,
+            json={"name": "Markaz", "code": "MAIN"},
+        )
+    ).json()
     return w["id"]
 
 
 @pytest.fixture
-async def customer_id(
-    client: AsyncClient, admin_headers: dict[str, str]
-) -> str:
-    c = (await client.post(
-        "/api/v1/customers", headers=admin_headers,
-        json={"name": "Mijoz", "credit_limit": "1000000"},
-    )).json()
+async def customer_id(client: AsyncClient, admin_headers: dict[str, str]) -> str:
+    c = (
+        await client.post(
+            "/api/v1/customers",
+            headers=admin_headers,
+            json={"name": "Mijoz", "credit_limit": "1000000"},
+        )
+    ).json()
     return c["id"]
 
 
 async def _stock_qty(test_db: AsyncSession, variant_id: str) -> int:
-    s = (await test_db.execute(
-        select(Stock).where(Stock.variant_id == _uuid.UUID(variant_id))
-    )).scalar_one_or_none()
+    s = (
+        await test_db.execute(select(Stock).where(Stock.variant_id == _uuid.UUID(variant_id)))
+    ).scalar_one_or_none()
     return s.quantity if s else 0
 
 
 async def _stock(test_db: AsyncSession, variant_id: str) -> Stock | None:
-    return (await test_db.execute(
-        select(Stock).where(Stock.variant_id == _uuid.UUID(variant_id))
-    )).scalar_one_or_none()
+    return (
+        await test_db.execute(select(Stock).where(Stock.variant_id == _uuid.UUID(variant_id)))
+    ).scalar_one_or_none()
 
 
 # ============ Create draft ============
 
+
 async def test_create_draft_order_with_auto_number_and_totals(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     r = await client.post(
-        "/api/v1/orders", headers=admin_headers,
+        "/api/v1/orders",
+        headers=admin_headers,
         json={
             "customer_id": customer_id,
             "warehouse_id": warehouse_id,
@@ -118,13 +133,17 @@ async def test_create_draft_order_with_auto_number_and_totals(
 
 
 async def test_create_order_validates_variant_existence(
-    client: AsyncClient, admin_headers: dict[str, str],
-    warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     r = await client.post(
-        "/api/v1/orders", headers=admin_headers,
+        "/api/v1/orders",
+        headers=admin_headers,
         json={
-            "customer_id": customer_id, "warehouse_id": warehouse_id,
+            "customer_id": customer_id,
+            "warehouse_id": warehouse_id,
             "items": [{"variant_id": "00000000-0000-0000-0000-000000000000", "quantity": 1}],
         },
     )
@@ -133,35 +152,42 @@ async def test_create_order_validates_variant_existence(
 
 # ============ Confirm flow ============
 
+
 async def _create_order(client, headers, customer_id, warehouse_id, variant_id, qty=5):
-    return (await client.post(
-        "/api/v1/orders", headers=headers,
-        json={
-            "customer_id": customer_id, "warehouse_id": warehouse_id,
-            "items": [{"variant_id": variant_id, "quantity": qty}],
-        },
-    )).json()
+    return (
+        await client.post(
+            "/api/v1/orders",
+            headers=headers,
+            json={
+                "customer_id": customer_id,
+                "warehouse_id": warehouse_id,
+                "items": [{"variant_id": variant_id, "quantity": qty}],
+            },
+        )
+    ).json()
 
 
 async def _stock_in(client, headers, variant_id, warehouse_id, qty):
     return await client.post(
-        "/api/v1/stock/movements/receive", headers=headers,
+        "/api/v1/stock/movements/receive",
+        headers=headers,
         json={"variant_id": variant_id, "to_warehouse_id": warehouse_id, "quantity": qty},
     )
 
 
 async def test_confirm_reserves_stock_and_increases_debt(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
 
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 5)
-    r = await client.post(
-        f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers
-    )
+    r = await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
     assert r.status_code == 200, r.text
     assert r.json()["status"] == "confirmed"
 
@@ -174,8 +200,11 @@ async def test_confirm_reserves_stock_and_increases_debt(
 
 
 async def test_confirm_insufficient_stock_409(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -190,17 +219,23 @@ async def test_confirm_insufficient_stock_409(
 
 
 async def test_confirm_blocked_by_credit_limit(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, test_db: AsyncSession,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
 
     # Limiti past mijoz
-    poor = (await client.post(
-        "/api/v1/customers", headers=admin_headers,
-        json={"name": "Past limit", "credit_limit": "10000"},
-    )).json()
+    poor = (
+        await client.post(
+            "/api/v1/customers",
+            headers=admin_headers,
+            json={"name": "Past limit", "credit_limit": "10000"},
+        )
+    ).json()
     order = await _create_order(client, admin_headers, poor["id"], warehouse_id, variant_id, 5)
     r = await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
     assert r.status_code == 409
@@ -211,8 +246,12 @@ async def test_confirm_blocked_by_credit_limit(
 
 
 async def test_sales_user_cannot_confirm_403(
-    client: AsyncClient, admin_headers: dict[str, str], sales_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    sales_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
@@ -223,9 +262,13 @@ async def test_sales_user_cannot_confirm_403(
 
 # ============ Pay flow ============
 
+
 async def test_pay_full_marks_paid_and_reduces_debt(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -234,7 +277,8 @@ async def test_pay_full_marks_paid_and_reduces_debt(
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
 
     r = await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/pay",
+        headers=admin_headers,
         json={"amount": "50000", "method": "cash"},
     )
     assert r.status_code == 201, r.text
@@ -251,8 +295,11 @@ async def test_pay_full_marks_paid_and_reduces_debt(
 
 
 async def test_pay_partial_keeps_confirmed_status(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -260,7 +307,8 @@ async def test_pay_partial_keeps_confirmed_status(
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 5)
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
     await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/pay",
+        headers=admin_headers,
         json={"amount": "20000"},
     )
     o = await test_db.get(Order, _uuid.UUID(order["id"]))
@@ -270,15 +318,19 @@ async def test_pay_partial_keeps_confirmed_status(
 
 
 async def test_pay_overpay_400(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 5)
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
     r = await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/pay",
+        headers=admin_headers,
         json={"amount": "999999"},
     )
     assert r.status_code == 400
@@ -286,9 +338,13 @@ async def test_pay_overpay_400(
 
 # ============ Ship flow ============
 
+
 async def test_ship_decrements_stock_and_releases_reservation(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -296,7 +352,8 @@ async def test_ship_decrements_stock_and_releases_reservation(
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 4)
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
     await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/pay",
+        headers=admin_headers,
         json={"amount": "40000"},
     )
 
@@ -311,9 +368,13 @@ async def test_ship_decrements_stock_and_releases_reservation(
 
 # ============ Cancel flow ============
 
+
 async def test_cancel_confirmed_releases_reserve_and_debt(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -322,7 +383,8 @@ async def test_cancel_confirmed_releases_reserve_and_debt(
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
 
     r = await client.post(
-        f"/api/v1/orders/{order['id']}/cancel", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/cancel",
+        headers=admin_headers,
         json={"reason": "Mijoz fikrini o'zgartirdi"},
     )
     assert r.status_code == 200
@@ -337,8 +399,11 @@ async def test_cancel_confirmed_releases_reserve_and_debt(
 
 
 async def test_cancel_shipped_returns_stock(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -348,7 +413,8 @@ async def test_cancel_shipped_returns_stock(
     await client.post(f"/api/v1/orders/{order['id']}/ship", headers=admin_headers)
 
     r = await client.post(
-        f"/api/v1/orders/{order['id']}/cancel", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/cancel",
+        headers=admin_headers,
         json={"reason": "Nuqson"},
     )
     assert r.status_code == 200
@@ -358,8 +424,11 @@ async def test_cancel_shipped_returns_stock(
 
 
 async def test_cannot_cancel_completed(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
@@ -371,18 +440,20 @@ async def test_cannot_cancel_completed(
     await client.post(f"/api/v1/orders/{order['id']}/ship", headers=admin_headers)
 
     # Endi COMPLETED
-    r = await client.post(
-        f"/api/v1/orders/{order['id']}/cancel", headers=admin_headers, json={}
-    )
+    r = await client.post(f"/api/v1/orders/{order['id']}/cancel", headers=admin_headers, json={})
     assert r.status_code == 400
 
 
 # ============ Invoice + Celery ============
 
+
 async def test_invoice_create_sends_celery_task(
     monkeypatch: pytest.MonkeyPatch,
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     sent: list[tuple] = []
 
@@ -391,6 +462,7 @@ async def test_invoice_create_sends_celery_task(
         return type("X", (), {"id": "fake"})()
 
     from app.api.v1.sales import orders as orders_module
+
     monkeypatch.setattr(orders_module.celery_app, "send_task", _fake)
 
     _, variant_id = catalog_setup
@@ -398,9 +470,7 @@ async def test_invoice_create_sends_celery_task(
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 2)
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
 
-    r = await client.post(
-        f"/api/v1/orders/{order['id']}/invoices", headers=admin_headers
-    )
+    r = await client.post(f"/api/v1/orders/{order['id']}/invoices", headers=admin_headers)
     assert r.status_code == 201, r.text
     inv = r.json()
     assert inv["status"] == "pending"
@@ -413,22 +483,27 @@ async def test_invoice_create_sends_celery_task(
 
 
 async def test_invoice_for_draft_400(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 1)
-    r = await client.post(
-        f"/api/v1/orders/{order['id']}/invoices", headers=admin_headers
-    )
+    r = await client.post(f"/api/v1/orders/{order['id']}/invoices", headers=admin_headers)
     assert r.status_code == 400
 
 
 # ============ Returns ============
 
+
 async def test_return_request_and_approve_restores_stock(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
     test_db: AsyncSession,
 ) -> None:
     _, variant_id = catalog_setup
@@ -436,7 +511,8 @@ async def test_return_request_and_approve_restores_stock(
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 5)
     await client.post(f"/api/v1/orders/{order['id']}/confirm", headers=admin_headers)
     await client.post(
-        f"/api/v1/orders/{order['id']}/pay", headers=admin_headers,
+        f"/api/v1/orders/{order['id']}/pay",
+        headers=admin_headers,
         json={"amount": "50000"},
     )
     await client.post(f"/api/v1/orders/{order['id']}/ship", headers=admin_headers)
@@ -448,7 +524,8 @@ async def test_return_request_and_approve_restores_stock(
     # 2 ta qaytarish
     items = order["items"]
     r = await client.post(
-        "/api/v1/returns", headers=admin_headers,
+        "/api/v1/returns",
+        headers=admin_headers,
         json={
             "order_id": order["id"],
             "items": [{"order_item_id": items[0]["id"], "quantity": 2}],
@@ -461,9 +538,7 @@ async def test_return_request_and_approve_restores_stock(
     assert Decimal(ret["total_refund"]) == Decimal("20000")
 
     # Approve — stock + balans
-    ap = await client.post(
-        f"/api/v1/returns/{ret['id']}/approve", headers=admin_headers
-    )
+    ap = await client.post(f"/api/v1/returns/{ret['id']}/approve", headers=admin_headers)
     assert ap.status_code == 200
     assert ap.json()["status"] == "approved"
 
@@ -472,14 +547,18 @@ async def test_return_request_and_approve_restores_stock(
 
 
 async def test_return_for_draft_order_400(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     order = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 1)
     items = order["items"]
     r = await client.post(
-        "/api/v1/returns", headers=admin_headers,
+        "/api/v1/returns",
+        headers=admin_headers,
         json={
             "order_id": order["id"],
             "items": [{"order_item_id": items[0]["id"], "quantity": 1}],
@@ -489,8 +568,11 @@ async def test_return_for_draft_order_400(
 
 
 async def test_return_qty_exceeds_order_item_400(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
@@ -500,7 +582,8 @@ async def test_return_qty_exceeds_order_item_400(
 
     items = order["items"]
     r = await client.post(
-        "/api/v1/returns", headers=admin_headers,
+        "/api/v1/returns",
+        headers=admin_headers,
         json={
             "order_id": order["id"],
             "items": [{"order_item_id": items[0]["id"], "quantity": 100}],
@@ -511,9 +594,13 @@ async def test_return_qty_exceeds_order_item_400(
 
 # ============ List + filter ============
 
+
 async def test_orders_filter_by_status_and_customer(
-    client: AsyncClient, admin_headers: dict[str, str],
-    catalog_setup: tuple[str, str], warehouse_id: str, customer_id: str,
+    client: AsyncClient,
+    admin_headers: dict[str, str],
+    catalog_setup: tuple[str, str],
+    warehouse_id: str,
+    customer_id: str,
 ) -> None:
     _, variant_id = catalog_setup
     await _stock_in(client, admin_headers, variant_id, warehouse_id, 10)
@@ -523,9 +610,7 @@ async def test_orders_filter_by_status_and_customer(
     confirmed = await _create_order(client, admin_headers, customer_id, warehouse_id, variant_id, 1)
     await client.post(f"/api/v1/orders/{confirmed['id']}/confirm", headers=admin_headers)
 
-    drafts = await client.get(
-        "/api/v1/orders", headers=admin_headers, params={"status": "draft"}
-    )
+    drafts = await client.get("/api/v1/orders", headers=admin_headers, params={"status": "draft"})
     assert drafts.json()["total"] == 2
     by_cust = await client.get(
         "/api/v1/orders", headers=admin_headers, params={"customer_id": customer_id}

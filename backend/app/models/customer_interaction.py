@@ -41,23 +41,19 @@ class CustomerInteraction(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
         index=True,
     )
-    type: Mapped[InteractionType] = mapped_column(
-        String(16), nullable=False, index=True
-    )
+    type: Mapped[InteractionType] = mapped_column(String(16), nullable=False, index=True)
     occurred_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
         index=True,
     )
-    follow_up_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    follow_up_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     subject: Mapped[str] = mapped_column(String(255), nullable=False)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    customer: Mapped["Customer"] = relationship(back_populates="interactions")
-    actor: Mapped["User | None"] = relationship()
+    customer: Mapped[Customer] = relationship(back_populates="interactions")
+    actor: Mapped[User | None] = relationship()
 
     def __repr__(self) -> str:
         return f"<Interaction {self.type} {self.subject!r}>"

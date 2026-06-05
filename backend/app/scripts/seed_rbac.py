@@ -10,6 +10,7 @@ Ishga tushirish:
     python -m app.scripts.seed_rbac
     docker compose exec backend python -m app.scripts.seed_rbac
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -25,32 +26,31 @@ from app.models.permission import Permission
 from app.models.role import Role, RoleName
 from app.models.user import User
 
-
 PERMISSIONS: list[tuple[str, str]] = [
-    ("user:read",       "Foydalanuvchilarni ko'rish"),
-    ("user:write",      "Foydalanuvchi qo'shish/tahrirlash"),
-    ("user:delete",     "Foydalanuvchini o'chirish"),
-    ("customer:read",   "Mijozlarni va aloqalarni ko'rish"),
-    ("customer:write",  "Mijoz/kontakt/aloqa qo'shish/tahrirlash"),
+    ("user:read", "Foydalanuvchilarni ko'rish"),
+    ("user:write", "Foydalanuvchi qo'shish/tahrirlash"),
+    ("user:delete", "Foydalanuvchini o'chirish"),
+    ("customer:read", "Mijozlarni va aloqalarni ko'rish"),
+    ("customer:write", "Mijoz/kontakt/aloqa qo'shish/tahrirlash"),
     ("customer:delete", "Mijozni yumshoq o'chirish"),
-    ("product:read",    "Mahsulot/kategoriya/brendni ko'rish"),
-    ("product:write",   "Mahsulot/kategoriya/brendni qo'shish/tahrirlash + rasm yuklash"),
-    ("product:delete",  "Mahsulot/kategoriya/brendni yumshoq o'chirish"),
-    ("order:read",      "Buyurtmalarni ko'rish"),
-    ("order:write",     "Buyurtma yaratish/tahrirlash"),
-    ("order:approve",   "Buyurtmani tasdiqlash"),
-    ("warehouse:read",  "Omborni ko'rish"),
+    ("product:read", "Mahsulot/kategoriya/brendni ko'rish"),
+    ("product:write", "Mahsulot/kategoriya/brendni qo'shish/tahrirlash + rasm yuklash"),
+    ("product:delete", "Mahsulot/kategoriya/brendni yumshoq o'chirish"),
+    ("order:read", "Buyurtmalarni ko'rish"),
+    ("order:write", "Buyurtma yaratish/tahrirlash"),
+    ("order:approve", "Buyurtmani tasdiqlash"),
+    ("warehouse:read", "Omborni ko'rish"),
     ("warehouse:write", "Ombor amallari (kirim/chiqim)"),
-    ("purchase:read",   "Ta'minotchi va PO ni ko'rish"),
-    ("purchase:write",  "Ta'minotchi va PO yaratish/tahrirlash"),
-    ("purchase:approve","PO receive (qabul) va pay (to'lov)"),
+    ("purchase:read", "Ta'minotchi va PO ni ko'rish"),
+    ("purchase:write", "Ta'minotchi va PO yaratish/tahrirlash"),
+    ("purchase:approve", "PO receive (qabul) va pay (to'lov)"),
     ("accounting:read", "Hisob-kitobni ko'rish"),
-    ("accounting:write","Hisob-kitob yozish"),
-    ("report:read",     "Hisobotlarni ko'rish"),
-    ("hr:read",         "HR — xodimlar/bo'lim/lavozimlarni ko'rish"),
-    ("hr:write",        "HR — yaratish/tahrirlash/restore"),
-    ("hr:delete",       "HR — yumshoq o'chirish"),
-    ("audit:read",      "Audit jurnalini ko'rish"),
+    ("accounting:write", "Hisob-kitob yozish"),
+    ("report:read", "Hisobotlarni ko'rish"),
+    ("hr:read", "HR — xodimlar/bo'lim/lavozimlarni ko'rish"),
+    ("hr:write", "HR — yaratish/tahrirlash/restore"),
+    ("hr:delete", "HR — yumshoq o'chirish"),
+    ("audit:read", "Audit jurnalini ko'rish"),
 ]
 
 ALL = [p[0] for p in PERMISSIONS]
@@ -59,36 +59,54 @@ ROLE_PERMISSIONS: dict[str, list[str]] = {
     RoleName.ADMIN: ALL,
     RoleName.DIRECTOR: [
         "user:read",
-        "customer:read", "product:read",
-        "order:read", "order:approve",
-        "warehouse:read", "accounting:read", "report:read",
-        "hr:read", "audit:read",
+        "customer:read",
+        "product:read",
+        "order:read",
+        "order:approve",
+        "warehouse:read",
+        "accounting:read",
+        "report:read",
+        "hr:read",
+        "audit:read",
         "purchase:read",
     ],
     RoleName.MANAGER: [
-        "customer:read", "customer:write",
+        "customer:read",
+        "customer:write",
         "product:read",
-        "order:read", "order:write", "order:approve",
-        "warehouse:read", "report:read",
-        "hr:read", "hr:write",
-        "purchase:read", "purchase:write",
+        "order:read",
+        "order:write",
+        "order:approve",
+        "warehouse:read",
+        "report:read",
+        "hr:read",
+        "hr:write",
+        "purchase:read",
+        "purchase:write",
     ],
     RoleName.SALES: [
-        "customer:read", "customer:write",
+        "customer:read",
+        "customer:write",
         "product:read",
-        "order:read", "order:write",
+        "order:read",
+        "order:write",
     ],
     RoleName.WAREHOUSE: [
-        "warehouse:read", "warehouse:write",
-        "product:read", "product:write",
+        "warehouse:read",
+        "warehouse:write",
+        "product:read",
+        "product:write",
         "order:read",
-        "purchase:read", "purchase:write", "purchase:approve",
+        "purchase:read",
+        "purchase:write",
+        "purchase:approve",
     ],
     # ESLATMA: product:delete faqat admin'da (default ALL ichida)
     RoleName.ACCOUNTANT: [
         "customer:read",
         "order:read",
-        "accounting:read", "accounting:write",
+        "accounting:read",
+        "accounting:write",
         "report:read",
     ],
     RoleName.COURIER: [
@@ -109,12 +127,10 @@ async def _upsert_permissions(db: AsyncSession) -> dict[str, Permission]:
     return by_code
 
 
-async def _upsert_roles(
-    db: AsyncSession, perms_by_code: dict[str, Permission]
-) -> dict[str, Role]:
+async def _upsert_roles(db: AsyncSession, perms_by_code: dict[str, Permission]) -> dict[str, Role]:
     existing = (
-        await db.execute(select(Role).options(selectinload(Role.permissions)))
-    ).scalars().all()
+        (await db.execute(select(Role).options(selectinload(Role.permissions)))).scalars().all()
+    )
     by_name = {r.name: r for r in existing}
 
     for role_name, codes in ROLE_PERMISSIONS.items():
@@ -128,9 +144,7 @@ async def _upsert_roles(
     return by_name
 
 
-async def _ensure_admin_user(
-    db: AsyncSession, admin_role: Role
-) -> tuple[User, bool]:
+async def _ensure_admin_user(db: AsyncSession, admin_role: Role) -> tuple[User, bool]:
     res = await db.execute(
         select(User)
         .where(User.email == settings.INITIAL_ADMIN_EMAIL)

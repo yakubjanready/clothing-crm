@@ -37,21 +37,23 @@ async def list_contacts(
 ) -> list[CustomerContactRead]:
     await _get_customer(db, customer_id)
     rows = (
-        await db.execute(
-            select(CustomerContact)
-            .where(
-                CustomerContact.customer_id == customer_id,
-                CustomerContact.deleted_at.is_(None),
+        (
+            await db.execute(
+                select(CustomerContact)
+                .where(
+                    CustomerContact.customer_id == customer_id,
+                    CustomerContact.deleted_at.is_(None),
+                )
+                .order_by(CustomerContact.is_primary.desc(), CustomerContact.full_name)
             )
-            .order_by(CustomerContact.is_primary.desc(), CustomerContact.full_name)
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     return [CustomerContactRead.model_validate(r) for r in rows]
 
 
-@router.post(
-    "", response_model=CustomerContactRead, status_code=status.HTTP_201_CREATED
-)
+@router.post("", response_model=CustomerContactRead, status_code=status.HTTP_201_CREATED)
 async def add_contact(
     customer_id: uuid.UUID,
     body: CustomerContactCreate,
@@ -74,8 +76,11 @@ async def add_contact(
     await db.flush()
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=contact.id,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=contact.id,
         changes={**body.model_dump(), "customer_id": str(customer_id)},
         request=request,
     )
@@ -93,15 +98,15 @@ async def soft_delete_contact(
     actor: User = Depends(require_permission("customer:write")),
 ) -> None:
     contact = await db.get(CustomerContact, contact_id)
-    if (
-        contact is None
-        or contact.deleted_at is not None
-        or contact.customer_id != customer_id
-    ):
+    if contact is None or contact.deleted_at is not None or contact.customer_id != customer_id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Kontakt topilmadi")
     contact.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=contact.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=contact.id,
+        request=request,
     )
     await db.commit()

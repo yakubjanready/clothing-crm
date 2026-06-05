@@ -34,8 +34,8 @@ class CustomerSegment(StrEnum):
 
 class PriceType(StrEnum):
     WHOLESALE = "wholesale"  # ulgurji
-    RETAIL = "retail"        # chakana
-    SPECIAL = "special"      # individual shartnoma
+    RETAIL = "retail"  # chakana
+    SPECIAL = "special"  # individual shartnoma
 
 
 class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
@@ -47,9 +47,7 @@ class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
 
     name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     legal_type: Mapped[str | None] = mapped_column(String(32), nullable=True)
-    inn: Mapped[str | None] = mapped_column(
-        String(32), unique=True, nullable=True, index=True
-    )
+    inn: Mapped[str | None] = mapped_column(String(32), unique=True, nullable=True, index=True)
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     address: Mapped[str | None] = mapped_column(String(512), nullable=True)
@@ -62,10 +60,16 @@ class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     )
 
     credit_limit: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
     current_debt: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
 
     manager_id: Mapped[uuid.UUID | None] = mapped_column(
@@ -80,13 +84,13 @@ class Customer(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         Boolean, nullable=False, default=True, server_default=text("true")
     )
 
-    manager: Mapped["User | None"] = relationship()
-    contacts: Mapped[list["CustomerContact"]] = relationship(
+    manager: Mapped[User | None] = relationship()
+    contacts: Mapped[list[CustomerContact]] = relationship(
         back_populates="customer",
         cascade="all, delete-orphan",
         lazy="selectin",
     )
-    interactions: Mapped[list["CustomerInteraction"]] = relationship(
+    interactions: Mapped[list[CustomerInteraction]] = relationship(
         back_populates="customer",
         cascade="all, delete-orphan",
     )

@@ -49,7 +49,10 @@ async def list_accounts(
     items, total, pages = await paginate(db, stmt, params)
     return Page[AccountRead](
         items=[AccountRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -83,8 +86,13 @@ async def create_account(
         raise HTTPException(status.HTTP_409_CONFLICT, "name yoki code band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=a.id, changes=body.model_dump(), request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=a.id,
+        changes=body.model_dump(),
+        request=request,
     )
     await db.commit()
     await db.refresh(a)
@@ -105,8 +113,14 @@ async def update_account(
 
     patch = body.model_dump(exclude_unset=True)
     allowed = {
-        "name", "code", "type", "currency",
-        "description", "bank_name", "account_number", "is_active",
+        "name",
+        "code",
+        "type",
+        "currency",
+        "description",
+        "bank_name",
+        "account_number",
+        "is_active",
     }
     changes = diff_attrs(a, patch, allowed)
     for f, v in patch.items():
@@ -115,8 +129,13 @@ async def update_account(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=a.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=a.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -144,7 +163,11 @@ async def soft_delete_account(
         )
     a.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=a.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=a.id,
+        request=request,
     )
     await db.commit()

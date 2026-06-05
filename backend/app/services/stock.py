@@ -5,6 +5,7 @@ Xato ko'tarilgan paytda chaqiruvchi `db.rollback()` qilishi kerak (FastAPI route
 HTTPException ko'targanda yashiringan tarzda buni qiladi: dependency sessiyani yopadi
 va atomik bo'lmagan o'zgarishlar transactiya bilan birga rollback bo'ladi).
 """
+
 from __future__ import annotations
 
 import logging
@@ -37,6 +38,7 @@ class InvalidMovementError(StockError):
 
 # ---------- Quyi qatlam ----------
 
+
 async def _lock_stock(
     db: AsyncSession, warehouse_id: uuid.UUID, variant_id: uuid.UUID
 ) -> Stock | None:
@@ -55,8 +57,11 @@ async def _get_or_create_stock(
     stock = await _lock_stock(db, warehouse_id, variant_id)
     if stock is None:
         stock = Stock(
-            warehouse_id=warehouse_id, variant_id=variant_id,
-            quantity=0, reserved=0, min_quantity=0,
+            warehouse_id=warehouse_id,
+            variant_id=variant_id,
+            quantity=0,
+            reserved=0,
+            min_quantity=0,
         )
         db.add(stock)
         await db.flush()
@@ -68,7 +73,7 @@ def _build_movement(
     type_: MovementType,
     variant_id: uuid.UUID,
     quantity: int,
-    actor: "User | None",
+    actor: User | None,
     from_wh: uuid.UUID | None = None,
     to_wh: uuid.UUID | None = None,
     reason: str | None = None,
@@ -98,22 +103,31 @@ def _maybe_notify_low_stock(stock: Stock) -> None:
 
     logger.warning(
         "low_stock stock_id=%s available=%s min=%s wh=%s variant=%s",
-        stock.id, available, stock.min_quantity, stock.warehouse_id, stock.variant_id,
+        stock.id,
+        available,
+        stock.min_quantity,
+        stock.warehouse_id,
+        stock.variant_id,
     )
     try:
         from app.tasks.celery_app import celery_app
+
         celery_app.send_task(
             "notify_low_stock",
             args=[
-                str(stock.id), str(stock.warehouse_id), str(stock.variant_id),
-                available, stock.min_quantity,
+                str(stock.id),
+                str(stock.warehouse_id),
+                str(stock.variant_id),
+                available,
+                stock.min_quantity,
             ],
         )
-    except Exception:  # noqa: BLE001 — broker ishlamasligi ekrandagi flow'ni buzmasin
+    except Exception:
         logger.exception("low_stock celery dispatch failed")
 
 
 # ---------- Yuqori qatlam operatsiyalari ----------
+
 
 async def receive_stock(
     db: AsyncSession,
@@ -121,7 +135,7 @@ async def receive_stock(
     variant_id: uuid.UUID,
     to_warehouse_id: uuid.UUID,
     quantity: int,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
@@ -134,9 +148,14 @@ async def receive_stock(
     stock.quantity += quantity
 
     mov = _build_movement(
-        type_=MovementType.IN, variant_id=variant_id, quantity=quantity, actor=actor,
-        to_wh=to_warehouse_id, reason=reason,
-        reference_type=reference_type, reference_id=reference_id,
+        type_=MovementType.IN,
+        variant_id=variant_id,
+        quantity=quantity,
+        actor=actor,
+        to_wh=to_warehouse_id,
+        reason=reason,
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(mov)
     await db.flush()
@@ -149,7 +168,7 @@ async def issue_stock(
     variant_id: uuid.UUID,
     from_warehouse_id: uuid.UUID,
     quantity: int,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
@@ -167,9 +186,14 @@ async def issue_stock(
 
     stock.quantity -= quantity
     mov = _build_movement(
-        type_=MovementType.OUT, variant_id=variant_id, quantity=quantity, actor=actor,
-        from_wh=from_warehouse_id, reason=reason,
-        reference_type=reference_type, reference_id=reference_id,
+        type_=MovementType.OUT,
+        variant_id=variant_id,
+        quantity=quantity,
+        actor=actor,
+        from_wh=from_warehouse_id,
+        reason=reason,
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(mov)
     await db.flush()
@@ -184,7 +208,7 @@ async def transfer_stock(
     from_warehouse_id: uuid.UUID,
     to_warehouse_id: uuid.UUID,
     quantity: int,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
@@ -208,9 +232,15 @@ async def transfer_stock(
     to_stock.quantity += quantity
 
     mov = _build_movement(
-        type_=MovementType.TRANSFER, variant_id=variant_id, quantity=quantity, actor=actor,
-        from_wh=from_warehouse_id, to_wh=to_warehouse_id, reason=reason,
-        reference_type=reference_type, reference_id=reference_id,
+        type_=MovementType.TRANSFER,
+        variant_id=variant_id,
+        quantity=quantity,
+        actor=actor,
+        from_wh=from_warehouse_id,
+        to_wh=to_warehouse_id,
+        reason=reason,
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(mov)
     await db.flush()
@@ -224,7 +254,7 @@ async def reserve_stock(
     variant_id: uuid.UUID,
     warehouse_id: uuid.UUID,
     quantity: int,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
@@ -242,9 +272,14 @@ async def reserve_stock(
 
     stock.reserved += quantity
     mov = _build_movement(
-        type_=MovementType.RESERVE, variant_id=variant_id, quantity=quantity, actor=actor,
-        from_wh=warehouse_id, reason=reason,
-        reference_type=reference_type, reference_id=reference_id,
+        type_=MovementType.RESERVE,
+        variant_id=variant_id,
+        quantity=quantity,
+        actor=actor,
+        from_wh=warehouse_id,
+        reason=reason,
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(mov)
     await db.flush()
@@ -258,7 +293,7 @@ async def release_reservation(
     variant_id: uuid.UUID,
     warehouse_id: uuid.UUID,
     quantity: int,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
@@ -276,9 +311,14 @@ async def release_reservation(
 
     stock.reserved -= quantity
     mov = _build_movement(
-        type_=MovementType.RELEASE, variant_id=variant_id, quantity=quantity, actor=actor,
-        from_wh=warehouse_id, reason=reason,
-        reference_type=reference_type, reference_id=reference_id,
+        type_=MovementType.RELEASE,
+        variant_id=variant_id,
+        quantity=quantity,
+        actor=actor,
+        from_wh=warehouse_id,
+        reason=reason,
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(mov)
     await db.flush()
@@ -291,7 +331,7 @@ async def adjust_stock(
     variant_id: uuid.UUID,
     warehouse_id: uuid.UUID,
     delta: int,
-    actor: "User | None",
+    actor: User | None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
@@ -302,17 +342,19 @@ async def adjust_stock(
     stock = await _get_or_create_stock(db, warehouse_id, variant_id)
     new_qty = stock.quantity + delta
     if new_qty < stock.reserved:
-        raise InsufficientStockError(
-            "Tuzatishdan keyin quantity < reserved bo'lib qoldi"
-        )
+        raise InsufficientStockError("Tuzatishdan keyin quantity < reserved bo'lib qoldi")
     stock.quantity = new_qty
 
     mov = _build_movement(
-        type_=MovementType.ADJUST, variant_id=variant_id, quantity=abs(delta), actor=actor,
+        type_=MovementType.ADJUST,
+        variant_id=variant_id,
+        quantity=abs(delta),
+        actor=actor,
         from_wh=warehouse_id if delta < 0 else None,
         to_wh=warehouse_id if delta > 0 else None,
         reason=reason or "inventory adjustment",
-        reference_type=reference_type, reference_id=reference_id,
+        reference_type=reference_type,
+        reference_id=reference_id,
     )
     db.add(mov)
     await db.flush()

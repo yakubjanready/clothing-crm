@@ -38,7 +38,9 @@ export function DataTable<T>({ columns, rows, rowKey, emptyTitle }: DataTablePro
             <tr key={rowKey(row)} className="border-b last:border-0 hover:bg-muted/30">
               {columns.map((c) => (
                 <td key={String(c.key)} className={`px-4 py-3 ${c.className ?? ""}`}>
-                  {c.render ? c.render(row) : String((row as Record<string, unknown>)[c.key as string] ?? "—")}
+                  {c.render
+                    ? c.render(row)
+                    : String((row as Record<string, unknown>)[c.key as string] ?? "—")}
                 </td>
               ))}
             </tr>

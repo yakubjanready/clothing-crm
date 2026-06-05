@@ -16,9 +16,9 @@ from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMix
 
 
 class AccountType(StrEnum):
-    CASH = "cash"      # naqd kassa
-    BANK = "bank"      # bank hisobi
-    CARD = "card"      # plastik karta
+    CASH = "cash"  # naqd kassa
+    BANK = "bank"  # bank hisobi
+    CARD = "card"  # plastik karta
     OTHER = "other"
 
 
@@ -26,14 +26,10 @@ class Account(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     """Moliyaviy hisob — kassa/bank/karta. Balans real vaqtda yangilanadi."""
 
     __tablename__ = "accounts"
-    __table_args__ = (
-        CheckConstraint("balance >= 0", name="ck_account_balance_nonneg"),
-    )
+    __table_args__ = (CheckConstraint("balance >= 0", name="ck_account_balance_nonneg"),)
 
     name: Mapped[str] = mapped_column(String(128), unique=True, nullable=False, index=True)
-    code: Mapped[str | None] = mapped_column(
-        String(32), unique=True, nullable=True, index=True
-    )
+    code: Mapped[str | None] = mapped_column(String(32), unique=True, nullable=True, index=True)
     type: Mapped[AccountType] = mapped_column(
         String(16), nullable=False, default=AccountType.CASH, index=True
     )
@@ -41,7 +37,10 @@ class Account(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         String(3), nullable=False, default="UZS", server_default=text("'UZS'")
     )
     balance: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
     description: Mapped[str | None] = mapped_column(String(512), nullable=True)
     bank_name: Mapped[str | None] = mapped_column(String(128), nullable=True)

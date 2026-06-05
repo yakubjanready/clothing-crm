@@ -1,7 +1,7 @@
 """WebSocket endpoint /ws/notifications — JWT auth + Redis Pub/Sub'dan tarqatish."""
+
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import uuid
@@ -19,9 +19,7 @@ router = APIRouter(prefix="/ws")
 logger = logging.getLogger(__name__)
 
 
-async def authenticate_ws_token(
-    token: str, db: AsyncSession
-) -> User | None:
+async def authenticate_ws_token(token: str, db: AsyncSession) -> User | None:
     """JWT access tokendan User'ni topadi. Yaroqsiz/faol bo'lmagan → None."""
     try:
         payload = decode_token(token, expected_type="access")
@@ -72,13 +70,13 @@ async def notifications_ws(
                 await websocket.send_json(payload)
     except WebSocketDisconnect:
         logger.debug("ws disconnected user=%s", user_id_str)
-    except Exception:  # noqa: BLE001
+    except Exception:
         logger.exception("ws error user=%s", user_id_str)
     finally:
         try:
             await pubsub.unsubscribe(REDIS_CHANNEL)
             await pubsub.aclose()
-        except Exception:  # noqa: BLE001
+        except Exception:
             pass
 
 

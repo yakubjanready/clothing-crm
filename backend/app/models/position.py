@@ -33,8 +33,8 @@ class Position(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         index=True,
     )
 
-    department: Mapped["Department | None"] = relationship(back_populates="positions")
-    employees: Mapped[list["Employee"]] = relationship(back_populates="position")
+    department: Mapped[Department | None] = relationship(back_populates="positions")
+    employees: Mapped[list[Employee]] = relationship(back_populates="position")
 
     def __repr__(self) -> str:
         return f"<Position {self.name}>"

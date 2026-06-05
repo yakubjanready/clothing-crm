@@ -30,12 +30,12 @@ class Role(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     name: Mapped[str] = mapped_column(String(32), unique=True, nullable=False, index=True)
     description: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    permissions: Mapped[list["Permission"]] = relationship(
+    permissions: Mapped[list[Permission]] = relationship(
         secondary=role_permissions,
         back_populates="roles",
         lazy="selectin",
     )
-    users: Mapped[list["User"]] = relationship(
+    users: Mapped[list[User]] = relationship(
         secondary=user_roles,
         back_populates="roles",
     )

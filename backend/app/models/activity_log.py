@@ -32,9 +32,7 @@ class ActivityLog(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     )
     action: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     entity_type: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
-    entity_id: Mapped[uuid.UUID] = mapped_column(
-        Uuid(as_uuid=True), nullable=False, index=True
-    )
+    entity_id: Mapped[uuid.UUID] = mapped_column(Uuid(as_uuid=True), nullable=False, index=True)
     changes: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
 

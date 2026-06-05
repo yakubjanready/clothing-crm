@@ -19,9 +19,7 @@ class SupplierPayment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     """Supplier'ga qilingan to'lov yozuvi."""
 
     __tablename__ = "supplier_payments"
-    __table_args__ = (
-        CheckConstraint("amount > 0", name="ck_supplier_payment_amount_positive"),
-    )
+    __table_args__ = (CheckConstraint("amount > 0", name="ck_supplier_payment_amount_positive"),)
 
     purchase_order_id: Mapped[uuid.UUID] = mapped_column(
         Uuid(as_uuid=True),
@@ -40,8 +38,8 @@ class SupplierPayment(Base, UUIDPrimaryKeyMixin, TimestampMixin):
         nullable=True,
     )
 
-    purchase_order: Mapped["PurchaseOrder"] = relationship(back_populates="payments")
-    actor: Mapped["User | None"] = relationship()
+    purchase_order: Mapped[PurchaseOrder] = relationship(back_populates="payments")
+    actor: Mapped[User | None] = relationship()
 
     def __repr__(self) -> str:
         return f"<SupplierPayment {self.method} amount={self.amount}>"

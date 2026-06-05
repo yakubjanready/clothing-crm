@@ -30,19 +30,23 @@ class Supplier(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     )
 
     name: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
-    inn: Mapped[str | None] = mapped_column(
-        String(32), unique=True, nullable=True, index=True
-    )
+    inn: Mapped[str | None] = mapped_column(String(32), unique=True, nullable=True, index=True)
     phone: Mapped[str | None] = mapped_column(String(32), nullable=True)
     email: Mapped[str | None] = mapped_column(String(255), nullable=True)
     address: Mapped[str | None] = mapped_column(String(512), nullable=True)
     contact_person: Mapped[str | None] = mapped_column(String(128), nullable=True)
 
     rating: Mapped[int] = mapped_column(
-        SmallInteger, nullable=False, default=0, server_default=text("0"),
+        SmallInteger,
+        nullable=False,
+        default=0,
+        server_default=text("0"),
     )
     current_debt: Mapped[Decimal] = mapped_column(
-        Numeric(14, 2), nullable=False, default=Decimal("0"), server_default=text("0"),
+        Numeric(14, 2),
+        nullable=False,
+        default=Decimal("0"),
+        server_default=text("0"),
     )
 
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -50,9 +54,7 @@ class Supplier(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         Boolean, nullable=False, default=True, server_default=text("true")
     )
 
-    purchase_orders: Mapped[list["PurchaseOrder"]] = relationship(
-        back_populates="supplier"
-    )
+    purchase_orders: Mapped[list[PurchaseOrder]] = relationship(back_populates="supplier")
 
     def __repr__(self) -> str:
         return f"<Supplier {self.name} rating={self.rating} debt={self.current_debt}>"

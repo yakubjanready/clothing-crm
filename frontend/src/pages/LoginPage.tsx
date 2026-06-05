@@ -30,9 +30,7 @@ export function LoginPage() {
 
   const m = useMutation({
     mutationFn: async (vars: { email: string; password: string }) => {
-      const tokens = (
-        await api.post<LoginResp>("/auth/login", vars)
-      ).data;
+      const tokens = (await api.post<LoginResp>("/auth/login", vars)).data;
       // Tokenlar oldindan o'rnatiladi, keyin /me ni chaqirish
       useAuthStore.getState().setTokens(tokens.access_token, tokens.refresh_token);
       const me = (await api.get<AuthUser>("/auth/me")).data;
@@ -41,8 +39,7 @@ export function LoginPage() {
     onSuccess: ({ tokens, me }) => {
       login(tokens.access_token, tokens.refresh_token, me);
       const from =
-        (location.state as { from?: { pathname: string } } | null)?.from
-          ?.pathname ?? "/";
+        (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/";
       navigate(from, { replace: true });
     },
   });
@@ -60,9 +57,7 @@ export function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="space-y-2">
           <CardTitle className="text-center text-xl">{t("auth.title")}</CardTitle>
-          <CardDescription className="text-center">
-            {t("auth.subtitle")}
-          </CardDescription>
+          <CardDescription className="text-center">{t("auth.subtitle")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form

@@ -15,10 +15,10 @@ if TYPE_CHECKING:
 
 
 class WarehouseType(StrEnum):
-    MAIN = "main"            # asosiy ombor
-    BRANCH = "branch"        # filial
-    OUTLET = "outlet"        # do'kon
-    TRANSIT = "transit"      # tranzit (yo'ldagi)
+    MAIN = "main"  # asosiy ombor
+    BRANCH = "branch"  # filial
+    OUTLET = "outlet"  # do'kon
+    TRANSIT = "transit"  # tranzit (yo'ldagi)
     DEFECTIVE = "defective"  # nuqsonli mahsulotlar
 
 
@@ -41,8 +41,8 @@ class Warehouse(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         nullable=True,
     )
 
-    manager: Mapped["User | None"] = relationship()
-    stocks: Mapped[list["Stock"]] = relationship(back_populates="warehouse")
+    manager: Mapped[User | None] = relationship()
+    stocks: Mapped[list[Stock]] = relationship(back_populates="warehouse")
 
     def __repr__(self) -> str:
         return f"<Warehouse {self.code} {self.type}>"

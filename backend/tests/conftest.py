@@ -1,4 +1,5 @@
 """Umumiy test fixtures: aiosqlite engine, fakeredis va dependency overridelar."""
+
 from __future__ import annotations
 
 from collections.abc import AsyncGenerator
@@ -14,7 +15,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-import app.models  # noqa: F401 — Base.metadata'ga modellarni registratsiya qilish
+import app.models
 from app.api.deps import get_current_user
 from app.core.redis import get_redis
 from app.core.security import hash_password
@@ -57,9 +58,7 @@ async def fake_redis() -> AsyncGenerator[FakeRedis, None]:
 
 
 @pytest.fixture
-async def client(
-    test_db: AsyncSession, fake_redis: FakeRedis
-) -> AsyncGenerator[AsyncClient, None]:
+async def client(test_db: AsyncSession, fake_redis: FakeRedis) -> AsyncGenerator[AsyncClient, None]:
     async def _override_db() -> AsyncGenerator[AsyncSession, None]:
         yield test_db
 
@@ -78,17 +77,33 @@ async def client(
 
 # ---- RBAC seed fixtures ----
 
+
 async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
     """Minimal RBAC: admin va sales rollari + bir nechta permission (HR ham)."""
     perm_codes = [
-        "user:read", "user:write", "user:delete",
-        "customer:read", "customer:write", "customer:delete",
-        "order:read", "order:write", "order:approve",
-        "hr:read", "hr:write", "hr:delete", "audit:read",
-        "product:read", "product:write", "product:delete",
-        "warehouse:read", "warehouse:write",
-        "purchase:read", "purchase:write", "purchase:approve",
-        "accounting:read", "accounting:write",
+        "user:read",
+        "user:write",
+        "user:delete",
+        "customer:read",
+        "customer:write",
+        "customer:delete",
+        "order:read",
+        "order:write",
+        "order:approve",
+        "hr:read",
+        "hr:write",
+        "hr:delete",
+        "audit:read",
+        "product:read",
+        "product:write",
+        "product:delete",
+        "warehouse:read",
+        "warehouse:write",
+        "purchase:read",
+        "purchase:write",
+        "purchase:approve",
+        "accounting:read",
+        "accounting:write",
     ]
     perms = {code: Permission(code=code, description=code) for code in perm_codes}
     for p in perms.values():
@@ -101,7 +116,8 @@ async def _seed_rbac(db: AsyncSession) -> dict[str, Role]:
     sales = Role(name=RoleName.SALES, description="sales")
     sales.permissions = [
         perms["customer:read"],
-        perms["order:read"], perms["order:write"],
+        perms["order:read"],
+        perms["order:write"],
         # ESLATMA: sales'da order:approve YO'Q (confirm faqat manager+ ga)
     ]
 
@@ -147,6 +163,7 @@ async def sales_user(test_db: AsyncSession, seeded_roles: dict[str, Role]) -> Us
 
 def override_user(u: User) -> None:
     """get_current_user'ni majburlab boshqa user'ga aylantirish (permission testlari uchun)."""
+
     async def _u() -> User:
         return u
 

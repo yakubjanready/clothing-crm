@@ -1,9 +1,10 @@
 """core/security.py — bcrypt va JWT testlari."""
+
 from __future__ import annotations
 
 import time
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
@@ -18,8 +19,8 @@ from app.core.security import (
     verify_password,
 )
 
-
 # ---- bcrypt ----
+
 
 def test_hash_and_verify_password_roundtrip() -> None:
     h = hash_password("Secret123!")
@@ -43,6 +44,7 @@ def test_hash_password_is_salted() -> None:
 
 # ---- JWT ----
 
+
 def test_access_token_roundtrip() -> None:
     sub = str(uuid.uuid4())
     token, jti, exp = create_access_token(sub)
@@ -53,7 +55,7 @@ def test_access_token_roundtrip() -> None:
     assert payload["jti"] == jti
     assert isinstance(payload["exp"], int)
     # ~15 daq atrofida muddati o'tishi kerak
-    delta_min = (exp - datetime.now(timezone.utc)).total_seconds() / 60
+    delta_min = (exp - datetime.now(UTC)).total_seconds() / 60
     assert 14 < delta_min < 16
 
 
@@ -65,7 +67,7 @@ def test_refresh_token_roundtrip_and_longer_lifetime() -> None:
     assert payload["sub"] == sub
     assert payload["type"] == "refresh"
     assert payload["jti"] == jti
-    delta_days = (exp - datetime.now(timezone.utc)).total_seconds() / 86400
+    delta_days = (exp - datetime.now(UTC)).total_seconds() / 86400
     assert 6.9 < delta_days < 7.1
 
 
@@ -89,7 +91,7 @@ def test_decode_tampered_signature_raises() -> None:
 
 
 def test_decode_expired_token_raises() -> None:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     expired_payload = {
         "sub": "user-1",
         "type": "access",
@@ -97,9 +99,7 @@ def test_decode_expired_token_raises() -> None:
         "exp": int((now - timedelta(minutes=1)).timestamp()),
         "jti": str(uuid.uuid4()),
     }
-    token = jwt.encode(
-        expired_payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM
-    )
+    token = jwt.encode(expired_payload, settings.SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
     with pytest.raises(InvalidTokenError):
         decode_token(token, expected_type="access")
 

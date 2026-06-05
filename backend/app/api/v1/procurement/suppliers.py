@@ -68,7 +68,10 @@ async def list_suppliers(
     items, total, pages = await paginate(db, stmt, params)
     return Page[SupplierRead](
         items=[SupplierRead.model_validate(i) for i in items],
-        total=total, page=params.page, page_size=params.page_size, pages=pages,
+        total=total,
+        page=params.page,
+        page_size=params.page_size,
+        pages=pages,
     )
 
 
@@ -99,27 +102,29 @@ async def get_balance(
         PurchaseOrder.deleted_at.is_(None),
     )
     orders_total = (await db.execute(base_q)).scalar_one()
-    orders_received = (await db.execute(
-        base_q.where(PurchaseOrder.status == PurchaseOrderStatus.RECEIVED)
-    )).scalar_one()
-    orders_paid = (await db.execute(
-        base_q.where(PurchaseOrder.status == PurchaseOrderStatus.PAID)
-    )).scalar_one()
+    orders_received = (
+        await db.execute(base_q.where(PurchaseOrder.status == PurchaseOrderStatus.RECEIVED))
+    ).scalar_one()
+    orders_paid = (
+        await db.execute(base_q.where(PurchaseOrder.status == PurchaseOrderStatus.PAID))
+    ).scalar_one()
 
-    total_purchased = (await db.execute(
-        select(func.coalesce(func.sum(PurchaseOrder.total), 0)).where(
-            PurchaseOrder.supplier_id == supplier_id,
-            PurchaseOrder.deleted_at.is_(None),
-            PurchaseOrder.status.in_(
-                [PurchaseOrderStatus.RECEIVED, PurchaseOrderStatus.PAID]
-            ),
+    total_purchased = (
+        await db.execute(
+            select(func.coalesce(func.sum(PurchaseOrder.total), 0)).where(
+                PurchaseOrder.supplier_id == supplier_id,
+                PurchaseOrder.deleted_at.is_(None),
+                PurchaseOrder.status.in_([PurchaseOrderStatus.RECEIVED, PurchaseOrderStatus.PAID]),
+            )
         )
-    )).scalar_one()
-    total_paid = (await db.execute(
-        select(func.coalesce(func.sum(SupplierPayment.amount), 0))
-        .join(PurchaseOrder, SupplierPayment.purchase_order_id == PurchaseOrder.id)
-        .where(PurchaseOrder.supplier_id == supplier_id)
-    )).scalar_one()
+    ).scalar_one()
+    total_paid = (
+        await db.execute(
+            select(func.coalesce(func.sum(SupplierPayment.amount), 0))
+            .join(PurchaseOrder, SupplierPayment.purchase_order_id == PurchaseOrder.id)
+            .where(PurchaseOrder.supplier_id == supplier_id)
+        )
+    ).scalar_one()
 
     return SupplierBalance(
         supplier_id=s.id,
@@ -150,8 +155,13 @@ async def create_supplier(
         raise HTTPException(status.HTTP_409_CONFLICT, "name yoki INN band") from e
 
     await log_activity(
-        db, actor=actor, action=AuditAction.CREATE,
-        entity_type=ENTITY, entity_id=s.id, changes=body.model_dump(), request=request,
+        db,
+        actor=actor,
+        action=AuditAction.CREATE,
+        entity_type=ENTITY,
+        entity_id=s.id,
+        changes=body.model_dump(),
+        request=request,
     )
     await db.commit()
     await db.refresh(s)
@@ -172,8 +182,15 @@ async def update_supplier(
 
     patch = body.model_dump(exclude_unset=True)
     allowed = {
-        "name", "inn", "phone", "email", "address", "contact_person",
-        "rating", "notes", "is_active",
+        "name",
+        "inn",
+        "phone",
+        "email",
+        "address",
+        "contact_person",
+        "rating",
+        "notes",
+        "is_active",
     }
     changes = diff_attrs(s, patch, allowed)
     for f, v in patch.items():
@@ -182,8 +199,13 @@ async def update_supplier(
 
     if changes:
         await log_activity(
-            db, actor=actor, action=AuditAction.UPDATE,
-            entity_type=ENTITY, entity_id=s.id, changes=changes, request=request,
+            db,
+            actor=actor,
+            action=AuditAction.UPDATE,
+            entity_type=ENTITY,
+            entity_id=s.id,
+            changes=changes,
+            request=request,
         )
     try:
         await db.commit()
@@ -206,7 +228,11 @@ async def soft_delete_supplier(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Supplier topilmadi")
     s.soft_delete()
     await log_activity(
-        db, actor=actor, action=AuditAction.SOFT_DELETE,
-        entity_type=ENTITY, entity_id=s.id, request=request,
+        db,
+        actor=actor,
+        action=AuditAction.SOFT_DELETE,
+        entity_type=ENTITY,
+        entity_id=s.id,
+        request=request,
     )
     await db.commit()

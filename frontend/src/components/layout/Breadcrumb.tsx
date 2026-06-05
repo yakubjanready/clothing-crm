@@ -37,9 +37,7 @@ export function Breadcrumb() {
           <span key={item.to} className="flex items-center">
             <ChevronRight className="mx-1 h-3 w-3" />
             {isLast ? (
-              <span className="font-medium text-foreground">
-                {t(item.i18nKey)}
-              </span>
+              <span className="font-medium text-foreground">{t(item.i18nKey)}</span>
             ) : (
               <Link to={item.to} className="hover:text-foreground">
                 {t(item.i18nKey)}

@@ -1,4 +1,5 @@
 """Mijoz xizmatlari — kredit limit tekshiruvi va qarz tuzatishi."""
+
 from __future__ import annotations
 
 import uuid
@@ -20,7 +21,7 @@ class CreditLimitExceededError(CustomerError):
     """Kredit limit oshib ketishi taklif qilinmoqda."""
 
 
-def check_credit_limit(customer: "Customer", additional_debt: Decimal) -> None:
+def check_credit_limit(customer: Customer, additional_debt: Decimal) -> None:
     """Yangi qarzni qo'shgandan keyin limit oshmasligini tekshiradi.
 
     - Agar `additional_debt <= 0` → tekshiruv talab etilmaydi (qarz oshmaydi).
@@ -47,13 +48,13 @@ def check_credit_limit(customer: "Customer", additional_debt: Decimal) -> None:
 async def adjust_customer_debt(
     db: AsyncSession,
     *,
-    customer: "Customer",
+    customer: Customer,
     delta: Decimal,
-    actor: "User | None" = None,
+    actor: User | None = None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,
-) -> "Customer":
+) -> Customer:
     """Mijoz qarzini delta ga o'zgartiradi va DebtRecord yozadi.
 
     - delta > 0 — qarz oshadi (kredit) — limit tekshiriladi
@@ -93,7 +94,7 @@ async def adjust_supplier_debt(
     *,
     supplier,
     delta: Decimal,
-    actor: "User | None" = None,
+    actor: User | None = None,
     reason: str | None = None,
     reference_type: str | None = None,
     reference_id: uuid.UUID | None = None,

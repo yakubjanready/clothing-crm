@@ -37,8 +37,8 @@ class OrderItem(Base, UUIDPrimaryKeyMixin, TimestampMixin):
     unit_price: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
     line_total: Mapped[Decimal] = mapped_column(Numeric(14, 2), nullable=False)
 
-    order: Mapped["Order"] = relationship(back_populates="items")
-    variant: Mapped["ProductVariant"] = relationship()
+    order: Mapped[Order] = relationship(back_populates="items")
+    variant: Mapped[ProductVariant] = relationship()
 
     def __repr__(self) -> str:
         return f"<OrderItem variant={self.variant_id} qty={self.quantity}>"
