@@ -52,6 +52,27 @@ class Settings(BaseSettings):
     SENTRY_DSN: str = ""
     SENTRY_TRACES_SAMPLE_RATE: float = 0.1
 
+    # --- Auth brute-force lockout ---
+    LOGIN_MAX_FAILED_ATTEMPTS: int = 5
+    LOGIN_FAIL_WINDOW_SECONDS: int = 900  # 15 daqiqa ichidagi xatolar hisoblanadi
+    LOGIN_LOCKOUT_SECONDS: int = 900  # 15 daqiqa lockout
+
+    # --- Logging ---
+    LOG_LEVEL: str = "INFO"
+    LOG_REDACT_FIELDS: list[str] = Field(
+        default_factory=lambda: [
+            "password",
+            "token",
+            "secret",
+            "authorization",
+            "cookie",
+            "api_key",
+            "refresh_token",
+            "access_token",
+            "hashed_password",
+        ]
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

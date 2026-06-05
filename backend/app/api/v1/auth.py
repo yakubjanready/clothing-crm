@@ -1,8 +1,13 @@
-"""Auth endpointlari: login, refresh (rotation), logout, me, register."""
+"""Auth endpointlari: login, refresh (rotation), logout, me, register.
+
+Xavfsizlik:
+- Brute-force lockout (Redis counter): N noto'g'ri urinish → M sek lockout
+- Har bir auth eventi audit log'ga yoziladi (LOGIN, LOGOUT, login_failed)
+"""
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from redis.asyncio import Redis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,6 +25,7 @@ from app.core.security import (
     verify_password,
 )
 from app.db.session import get_db
+from app.models.activity_log import AuditAction
 from app.models.role import Role
 from app.models.user import User
 from app.schemas.auth import (
@@ -29,6 +35,7 @@ from app.schemas.auth import (
     UserCreate,
     UserRead,
 )
+from app.services.audit import log_activity
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -41,15 +48,35 @@ def _refresh_ttl_seconds() -> int:
     return settings.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 3600
 
 
+def _login_fail_key(email: str) -> str:
+    return f"loginfail:{email.lower()}"
+
+
+def _login_lock_key(email: str) -> str:
+    return f"loginlock:{email.lower()}"
+
+
 # ---- POST /auth/login ----
 
 
 @router.post("/login", response_model=TokenPair)
 async def login(
     body: LoginRequest,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
 ) -> TokenPair:
+    # 1) Brute-force lockout tekshiruvi
+    lock_key = _login_lock_key(body.email)
+    if await redis.exists(lock_key):
+        ttl = await redis.ttl(lock_key)
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Juda ko'p urinishlar — {ttl} sekunddan keyin urinib ko'ring",
+            headers={"Retry-After": str(ttl)},
+        )
+
+    # 2) Foydalanuvchini topish + parolni tekshirish
     stmt = (
         select(User)
         .where(User.email == body.email, User.deleted_at.is_(None))
@@ -62,15 +89,53 @@ async def login(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Email yoki parol noto'g'ri",
     )
-    if user is None or not user.is_active:
-        raise invalid
-    if not verify_password(body.password, user.hashed_password):
+    is_invalid = (
+        user is None
+        or not user.is_active
+        or not verify_password(body.password, user.hashed_password)
+    )
+
+    if is_invalid:
+        # 3a) Xato urinishni counter'ga qo'shish
+        fail_key = _login_fail_key(body.email)
+        fails = await redis.incr(fail_key)
+        if fails == 1:
+            await redis.expire(fail_key, settings.LOGIN_FAIL_WINDOW_SECONDS)
+        if fails >= settings.LOGIN_MAX_FAILED_ATTEMPTS:
+            await redis.set(lock_key, "1", ex=settings.LOGIN_LOCKOUT_SECONDS)
+            await redis.delete(fail_key)
+        # 3b) Audit (faqat mavjud user uchun — email enumeration'ni kamaytirish)
+        if user is not None:
+            await log_activity(
+                db,
+                actor=user,
+                action="login_failed",
+                entity_type="user",
+                entity_id=user.id,
+                changes={"attempt": fails},
+                request=request,
+            )
+            await db.commit()
         raise invalid
 
+    # 4) Muvaffaqiyat — counter'ni o'chirish + tokenlar + audit
+    await redis.delete(_login_fail_key(body.email), lock_key)
+
+    assert user is not None  # type narrowing (yuqorida is_invalid bo'sh)
     access_token, _, _ = create_access_token(str(user.id))
     refresh_token, rjti, _ = create_refresh_token(str(user.id))
-
     await redis.set(_refresh_key(str(user.id), rjti), "1", ex=_refresh_ttl_seconds())
+
+    await log_activity(
+        db,
+        actor=user,
+        action=AuditAction.LOGIN,
+        entity_type="user",
+        entity_id=user.id,
+        request=request,
+    )
+    await db.commit()
+
     return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
 
@@ -111,12 +176,18 @@ async def refresh(
 # ---- POST /auth/logout ----
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/logout",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+)
 async def logout(
+    request: Request,
     user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
     redis: Redis = Depends(get_redis),
-) -> None:
-    """Foydalanuvchining barcha refresh tokenlarini bekor qiladi."""
+) -> Response:
+    """Foydalanuvchining barcha refresh tokenlarini bekor qiladi + audit log."""
     pattern = _refresh_key(str(user.id), "*")
     cursor = 0
     while True:
@@ -125,6 +196,16 @@ async def logout(
             await redis.delete(*keys)
         if cursor == 0:
             break
+    await log_activity(
+        db,
+        actor=user,
+        action=AuditAction.LOGOUT,
+        entity_type="user",
+        entity_id=user.id,
+        request=request,
+    )
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 # ---- GET /auth/me ----

@@ -49,6 +49,63 @@ async def test_login_inactive_user_401(client: AsyncClient, admin_user: User, te
     assert resp.status_code == 401
 
 
+# ---- brute-force lockout ----
+
+
+async def test_login_brute_force_lockout_after_5_failed_attempts(
+    client: AsyncClient,
+    admin_user: User,
+) -> None:
+    """5 ta xato urinish → 6-chi urinish 429 qaytaradi (lockout)."""
+    # 5 ta noto'g'ri urinish — har biri 401
+    for _ in range(5):
+        resp = await client.post(
+            "/api/v1/auth/login",
+            json={"email": "admin@example.com", "password": "wrong"},
+        )
+        assert resp.status_code == 401, resp.text
+
+    # 6-chi urinish (hatto to'g'ri parol bilan ham) — 429 + Retry-After header
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "admin@example.com", "password": "AdminPass123!"},
+    )
+    assert resp.status_code == 429, resp.text
+    assert "Retry-After" in resp.headers
+    assert int(resp.headers["Retry-After"]) > 0
+    body = resp.json()
+    assert "ko'p urinishlar" in body["detail"]
+
+
+async def test_login_success_resets_failure_counter(
+    client: AsyncClient,
+    admin_user: User,
+) -> None:
+    """Muvaffaqiyatli login → counter reset bo'lib, qayta xato urinishlar 401."""
+    # 3 ta xato (5 dan kam — lockout yo'q)
+    for _ in range(3):
+        resp = await client.post(
+            "/api/v1/auth/login",
+            json={"email": "admin@example.com", "password": "wrong"},
+        )
+        assert resp.status_code == 401
+
+    # To'g'ri parol — 200
+    resp = await client.post(
+        "/api/v1/auth/login",
+        json={"email": "admin@example.com", "password": "AdminPass123!"},
+    )
+    assert resp.status_code == 200, resp.text
+
+    # Endi yana 5 ta xato — yana lockout faqat 5-dan keyin bo'ladi (reset bo'lgani uchun)
+    for i in range(4):
+        resp = await client.post(
+            "/api/v1/auth/login",
+            json={"email": "admin@example.com", "password": "wrong"},
+        )
+        assert resp.status_code == 401, f"attempt {i+1}: {resp.text}"
+
+
 # ---- /me ----
 
 

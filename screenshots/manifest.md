@@ -152,3 +152,13 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 |------|------|------------|------|
 | cicd_deploy__faza18__01-deploy-result.png | 18 | D.P8 | CI/CD deploy passed: serverdagi backend/celery_worker/celery_beat/frontend image'lari `registry.gitlab.com/.../backend:64d593a2` va `.../frontend:64d593a2` (avval lokal `crm-backend:prod` edi); /healthz=ok, /=200, /docs=200; alembic head c1e9c4b3fdcb |
 | cicd_deploy__faza18__02-pipeline-fix.png  | 18 | D.P8 | Pipeline #2579385458 deploy:prod libcrypto error tuzatish: GitLab File-tipidagi $SSH_PRIVATE_KEY fayl yo'lini beradi → `ssh-add "$SSH_PRIVATE_KEY"` (echo+pipe o'rniga); Hetzner firewall 22→0.0.0.0/0 (kalit-only + fail2ban himoyalaydi) |
+
+## Faza 19 — Xavfsizlik + audit + optimizatsiya + hujjatlar (BTEC B.M2/D.M4 yakuni)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| sec__faza19__01-brute-force-tests.png    | 19 | security | 15/15 auth testi yashil + 2 ta yangi (test_login_brute_force_lockout, test_login_success_resets_counter); jami 216 ta backend test passed |
+| sec__faza19__02-explain-before-after.png | 19 | B.M2/D.M4 | PostgreSQL EXPLAIN ANALYZE oldin/keyin: cost 13.29→0.01 (-99.92%), planning 3.24→1.58ms (-51%), execution 0.145→0.080ms (-45%); /healthz throughput 3892→6399 req/s (+64%) |
+| sec__faza19__03-security-headers.png     | 19 | security | Live tekshiruv (http://138.199.218.108): X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, CSP, Referrer-Policy, Permissions-Policy headers; nginx rate_limit zonalari |
+| sec__faza19__04-audit-log-flow.png       | 19 | audit | Audit log oqim: login (success/failed)/logout har biri activity_logs jadvalga IP, action, entity_id, changes JSON bilan yoziladi; Redis brute-force lockout (5 fail → 15 daq) |
+| sec__faza19__05-faza19-summary.png       | 19 | security+B.M2/D.M4 | Faza 19 to'liq yakuni: 10 ta xavfsizlik elementi, 5 ta optimizatsiya o'lchovi, 5 ta hujjat (README, BENCHMARKS, ROADMAP, DEPLOY, /docs) |
