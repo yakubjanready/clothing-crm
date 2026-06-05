@@ -77,3 +77,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | procurement__faza9__01-pytest-green.png       | 9 | procurement | 174 ta test yashil (procurement 22: state machine 7, supplier CRUD 4, PO create+receive (stock+cost+debt) 4, pay 4, cancel+balance 3) |
 | procurement__faza9__02-alembic-migrations.png | 9 | procurement | Alembic: sales → procurement_module; suppliers/purchase_orders/purchase_items/supplier_payments + ProductVariant.cost_price ustuni |
 | procurement__faza9__03-db-tables.png          | 9 | procurement | Real Postgres: 33 jadval, suppliers CHECK (debt>=0, rating 0-5), product_variants.cost_price ustuni qo'shildi |
+
+## Faza 10 — Moliya (Account/FinancePayment/DebtRecord)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| finance__faza10__01-pytest-green.png       | 10 | finance | 190 ta test yashil (finance 16: account CRUD 5, income/expense+insufficient 4, transfer atomik 3, debts auto-write 3, list filter 1) |
+| finance__faza10__02-alembic-migrations.png | 10 | finance | Alembic: procurement → finance_module; accounts/finance_payments/debt_records |
+| finance__faza10__03-db-tables.png          | 10 | finance | Real Postgres: 36 jadval, accounts CHECK (balance>=0), finance_payments CHECK (amount>0), debt_records ledger jadvali |

@@ -1,11 +1,18 @@
 """Barcha modellar shu yerda import qilinadi — Base.metadata'ga registratsiya uchun.
 Alembic env.py va testlardagi create_all shu modulga tayanadi.
 """
+from app.models.account import Account, AccountType
 from app.models.activity_log import ActivityLog, AuditAction
 from app.models.associations import role_permissions, user_roles
 from app.models.attribute_value import AttributeValue
 from app.models.brand import Brand
 from app.models.category import Category
+from app.models.debt_record import DebtDirection, DebtPartyType, DebtRecord
+from app.models.finance_payment import (
+    FinanceCategory,
+    FinancePayment,
+    PaymentDirection,
+)
 from app.models.customer import Customer, CustomerSegment, PriceType
 from app.models.customer_contact import CustomerContact
 from app.models.customer_interaction import CustomerInteraction, InteractionType
@@ -32,6 +39,9 @@ from app.models.user import User
 from app.models.warehouse import Warehouse, WarehouseType
 
 __all__ = [
+    "Account", "AccountType",
+    "FinancePayment", "PaymentDirection", "FinanceCategory",
+    "DebtRecord", "DebtPartyType", "DebtDirection",
     "ActivityLog", "AuditAction",
     "AttributeValue",
     "Brand",

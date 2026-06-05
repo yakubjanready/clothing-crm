@@ -97,6 +97,18 @@ from app.schemas.supplier import (
     SupplierRead,
     SupplierUpdate,
 )
+from app.schemas.account import (
+    AccountCreate,
+    AccountRead,
+    AccountUpdate,
+)
+from app.schemas.debt_record import DebtRecordRead
+from app.schemas.finance_payment import (
+    FinancePaymentCreate,
+    FinancePaymentRead,
+    TransferRequest,
+    TransferResponse,
+)
 from app.schemas.warehouse import WarehouseCreate, WarehouseRead, WarehouseUpdate
 
 __all__ = [
@@ -130,4 +142,8 @@ __all__ = [
     "PurchaseOrderCreate", "PurchaseOrderUpdate", "PurchaseOrderRead",
     "PurchaseItemCreate", "PurchaseItemRead", "POCancelRequest",
     "SupplierPaymentCreate", "SupplierPaymentRead",
+    "AccountCreate", "AccountUpdate", "AccountRead",
+    "FinancePaymentCreate", "FinancePaymentRead",
+    "TransferRequest", "TransferResponse",
+    "DebtRecordRead",
 ]

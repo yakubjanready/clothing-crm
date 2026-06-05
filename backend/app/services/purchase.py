@@ -188,7 +188,12 @@ async def receive_purchase(
             variant.cost_price = item.unit_cost
 
     supplier = await db.get(Supplier, po.supplier_id)
-    supplier.current_debt = supplier.current_debt + po.total
+    from app.services.customer import adjust_supplier_debt
+    await adjust_supplier_debt(
+        db, supplier=supplier, delta=po.total, actor=actor,
+        reason=f"PO {po.number} receive",
+        reference_type="purchase_order", reference_id=po.id,
+    )
 
     po.status = PurchaseOrderStatus.RECEIVED
     po.received_at = datetime.now(timezone.utc)
@@ -221,8 +226,12 @@ async def pay_supplier(
         )
 
     supplier = await db.get(Supplier, po.supplier_id)
-    new_debt = supplier.current_debt - amount
-    supplier.current_debt = max(Decimal("0"), new_debt)
+    from app.services.customer import adjust_supplier_debt
+    await adjust_supplier_debt(
+        db, supplier=supplier, delta=-amount, actor=actor,
+        reason=f"PO {po.number} payment",
+        reference_type="purchase_order", reference_id=po.id,
+    )
 
     payment = SupplierPayment(
         purchase_order_id=po.id,
