@@ -73,5 +73,60 @@
     "uz": "O'zbek",
     "ru": "Русский",
     "en": "English"
+  },
+  "products": {
+    "list_title": "Products",
+    "list_description": "Product catalog — filter, search, pagination",
+    "new": "New product",
+    "edit": "Edit",
+    "detail": "Product card",
+    "filter_gender": "Gender",
+    "filter_brand": "Brand",
+    "filter_category": "Category",
+    "filter_active": "Active only",
+    "all": "All",
+    "fields": {
+      "name": "Name",
+      "slug": "Slug",
+      "sku_prefix": "SKU prefix",
+      "description": "Description",
+      "material": "Material",
+      "gender": "Gender",
+      "category": "Category",
+      "brand": "Brand",
+      "is_active": "Active",
+      "images": "Images"
+    },
+    "gender": {
+      "men": "Men",
+      "women": "Women",
+      "unisex": "Unisex",
+      "kids": "Kids",
+      "boys": "Boys",
+      "girls": "Girls"
+    },
+    "delete_confirm_title": "Delete product",
+    "delete_confirm_desc": "This action is irreversible (soft delete).",
+    "created_toast": "Product created",
+    "updated_toast": "Product updated",
+    "deleted_toast": "Product deleted",
+    "error_toast": "Something went wrong",
+    "no_image": "No image",
+    "drop_images": "Drop images here or click to choose"
+  },
+  "variants": {
+    "title": "Variants",
+    "matrix_title": "Variant matrix",
+    "matrix_desc": "Auto-create size × color combinations",
+    "sizes": "Sizes (comma-separated)",
+    "colors": "Colors (comma-separated; #hex)",
+    "wholesale": "Wholesale price",
+    "retail": "Retail price",
+    "create_matrix": "Create matrix",
+    "created_count": "Created: {{count}}",
+    "skipped_count": "Skipped (existing): {{count}}",
+    "sku": "SKU",
+    "size": "Size",
+    "color": "Color"
   }
 }

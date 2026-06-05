@@ -6,6 +6,10 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
 import "@/lib/i18n";
+import { ProductCreatePage } from "@/pages/catalog/ProductCreatePage";
+import { ProductDetailPage } from "@/pages/catalog/ProductDetailPage";
+import { ProductEditPage } from "@/pages/catalog/ProductEditPage";
+import { ProductsListPage } from "@/pages/catalog/ProductsListPage";
 import { DashboardPage } from "@/pages/DashboardPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
@@ -47,7 +51,10 @@ export default function App() {
                 <Route path="/catalog" element={<Navigate to="/catalog/products" replace />} />
                 <Route path="/catalog/categories" element={ph("modules.catalog_categories")} />
                 <Route path="/catalog/brands"     element={ph("modules.catalog_brands")} />
-                <Route path="/catalog/products"   element={ph("modules.catalog_products")} />
+                <Route path="/catalog/products"           element={<ProductsListPage />} />
+                <Route path="/catalog/products/new"       element={<ProductCreatePage />} />
+                <Route path="/catalog/products/:id"       element={<ProductDetailPage />} />
+                <Route path="/catalog/products/:id/edit"  element={<ProductEditPage />} />
 
                 {/* Warehouse */}
                 <Route path="/warehouse" element={<Navigate to="/warehouse/warehouses" replace />} />

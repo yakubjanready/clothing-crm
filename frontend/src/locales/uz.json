@@ -73,5 +73,60 @@
     "uz": "O'zbek",
     "ru": "Русский",
     "en": "English"
+  },
+  "products": {
+    "list_title": "Mahsulotlar",
+    "list_description": "Mahsulot katalogi — filter, qidiruv, sahifalash",
+    "new": "Yangi mahsulot",
+    "edit": "Tahrirlash",
+    "detail": "Mahsulot kartochkasi",
+    "filter_gender": "Jins",
+    "filter_brand": "Brend",
+    "filter_category": "Kategoriya",
+    "filter_active": "Faqat faol",
+    "all": "Hammasi",
+    "fields": {
+      "name": "Nomi",
+      "slug": "Slug",
+      "sku_prefix": "SKU prefiks",
+      "description": "Tavsif",
+      "material": "Material",
+      "gender": "Jins",
+      "category": "Kategoriya",
+      "brand": "Brend",
+      "is_active": "Faol",
+      "images": "Rasmlar"
+    },
+    "gender": {
+      "men": "Erkak",
+      "women": "Ayol",
+      "unisex": "Uniseks",
+      "kids": "Bolalar",
+      "boys": "O'g'il bola",
+      "girls": "Qiz bola"
+    },
+    "delete_confirm_title": "Mahsulotni o'chirish",
+    "delete_confirm_desc": "Bu amal qaytarib bo'lmaydi (yumshoq o'chirish).",
+    "created_toast": "Mahsulot yaratildi",
+    "updated_toast": "Mahsulot yangilandi",
+    "deleted_toast": "Mahsulot o'chirildi",
+    "error_toast": "Xatolik yuz berdi",
+    "no_image": "Rasm yo'q",
+    "drop_images": "Rasmlarni shu yerga tashlang yoki tanlang"
+  },
+  "variants": {
+    "title": "Variantlar",
+    "matrix_title": "Variant matritsasi",
+    "matrix_desc": "O'lcham va rang kombinatsiyalarini avtomatik yaratish",
+    "sizes": "O'lchamlar (vergul bilan)",
+    "colors": "Ranglar (vergul bilan; #hex bo'lishi mumkin)",
+    "wholesale": "Ulgurji narx",
+    "retail": "Chakana narx",
+    "create_matrix": "Matritsa yaratish",
+    "created_count": "Yaratildi: {{count}}",
+    "skipped_count": "O'tkazib yuborildi (mavjud): {{count}}",
+    "sku": "SKU",
+    "size": "O'lcham",
+    "color": "Rang"
   }
 }

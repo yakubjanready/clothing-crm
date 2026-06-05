@@ -101,3 +101,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | frontend__faza12__01-vitest-green.png  | 12 | frontend | 6 ta vitest yashil (App: 2, auth store: 4) — login form, ProtectedRoute redirect, Zustand login/logout/hasRole |
 | frontend__faza12__02-build-success.png | 12 | frontend | TypeScript build + Vite bundle muvaffaqiyatli (1832 modul, ~505KB JS gzipped 159KB, ~17KB CSS) |
 | frontend__faza12__03-tree.png          | 12 | frontend | 39 ta fayl: lib (api+i18n+utils), stores (auth+test), components (ui/8 + layout/5 + common/6 + auth + theme), pages (5), locales (uz/ru/en) |
+
+## Faza 13 — Mahsulotlar UI (list+filter+pagination, create/edit RHF+Zod, detail+variants+drag-drop)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| products_ui__faza13__01-vitest-green.png  | 13 | products_ui | 11 ta vitest yashil (App: 2, auth: 4, product-schema Zod: 5) |
+| products_ui__faza13__02-build-success.png | 13 | products_ui | Vite build: 1887 modul, 718KB JS (gzip 219KB), 22KB CSS |
+| products_ui__faza13__03-tree.png          | 13 | products_ui | Yangi UI fayllari: api/{catalog,products,types}, pages/catalog/{List,Detail,Create,Edit,Form,Dropzone,MatrixDialog}, ui/{dialog,select,badge,textarea,form}, common/{Pagination,SearchInput,ConfirmDialog} |

@@ -73,5 +73,60 @@
     "uz": "O'zbek",
     "ru": "Русский",
     "en": "English"
+  },
+  "products": {
+    "list_title": "Товары",
+    "list_description": "Каталог товаров — фильтр, поиск, пагинация",
+    "new": "Новый товар",
+    "edit": "Редактировать",
+    "detail": "Карточка товара",
+    "filter_gender": "Пол",
+    "filter_brand": "Бренд",
+    "filter_category": "Категория",
+    "filter_active": "Только активные",
+    "all": "Все",
+    "fields": {
+      "name": "Название",
+      "slug": "Slug",
+      "sku_prefix": "Префикс SKU",
+      "description": "Описание",
+      "material": "Материал",
+      "gender": "Пол",
+      "category": "Категория",
+      "brand": "Бренд",
+      "is_active": "Активен",
+      "images": "Изображения"
+    },
+    "gender": {
+      "men": "Мужской",
+      "women": "Женский",
+      "unisex": "Унисекс",
+      "kids": "Детский",
+      "boys": "Мальчики",
+      "girls": "Девочки"
+    },
+    "delete_confirm_title": "Удалить товар",
+    "delete_confirm_desc": "Действие необратимо (мягкое удаление).",
+    "created_toast": "Товар создан",
+    "updated_toast": "Товар обновлён",
+    "deleted_toast": "Товар удалён",
+    "error_toast": "Произошла ошибка",
+    "no_image": "Нет изображения",
+    "drop_images": "Перетащите изображения сюда или выберите"
+  },
+  "variants": {
+    "title": "Варианты",
+    "matrix_title": "Матрица вариантов",
+    "matrix_desc": "Автоматическое создание комбинаций размер × цвет",
+    "sizes": "Размеры (через запятую)",
+    "colors": "Цвета (через запятую; #hex)",
+    "wholesale": "Оптовая цена",
+    "retail": "Розничная цена",
+    "create_matrix": "Создать матрицу",
+    "created_count": "Создано: {{count}}",
+    "skipped_count": "Пропущено (существуют): {{count}}",
+    "sku": "SKU",
+    "size": "Размер",
+    "color": "Цвет"
   }
 }
