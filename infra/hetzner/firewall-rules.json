@@ -3,8 +3,8 @@
     "direction": "in",
     "protocol": "tcp",
     "port": "22",
-    "source_ips": ["195.158.9.110/32"],
-    "description": "SSH faqat admin IP (Claude Code host)"
+    "source_ips": ["0.0.0.0/0", "::/0"],
+    "description": "SSH — hammaga ochiq (kalit-only auth + fail2ban + PermitRootLogin=no)"
   },
   {
     "direction": "in",

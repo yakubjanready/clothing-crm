@@ -145,3 +145,10 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | cloud__faza17__03-stack-running.png       | 17 | prod_deploy | 8 ta Docker xizmat `Up (healthy)` (postgres, redis, backend, celery_worker, celery_beat, frontend, nginx, minio); tashqi smoke test 138.199.218.108: /healthz=ok, /=200, /docs=200 |
 | cloud__faza17__04-db-migrations.png       | 17 | prod_deploy | Alembic current: c1e9c4b3fdcb (notifications, eng oxirgi); history 12 ta migratsiya (auth_rbac→hr→catalog→warehouse→customer→sales→procurement→finance→notifications); PostgreSQL: 37 ta jadval |
 | cloud__faza17__05-monitoring-security.png | 17 | observability | Netdata v2.10.3 active+listening :19999 (Hetzner FW'da bloklangan, SSH tunnel only); sshd: PermitRootLogin=no, PasswordAuthentication=no, MaxAuthTries=3; fail2ban sshd jail active |
+
+## Faza 18 — CI/CD avtomatik deploy (GitLab pipeline → Hetzner, BTEC D.P8 yakuni)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| cicd_deploy__faza18__01-deploy-result.png | 18 | D.P8 | CI/CD deploy passed: serverdagi backend/celery_worker/celery_beat/frontend image'lari `registry.gitlab.com/.../backend:64d593a2` va `.../frontend:64d593a2` (avval lokal `crm-backend:prod` edi); /healthz=ok, /=200, /docs=200; alembic head c1e9c4b3fdcb |
+| cicd_deploy__faza18__02-pipeline-fix.png  | 18 | D.P8 | Pipeline #2579385458 deploy:prod libcrypto error tuzatish: GitLab File-tipidagi $SSH_PRIVATE_KEY fayl yo'lini beradi → `ssh-add "$SSH_PRIVATE_KEY"` (echo+pipe o'rniga); Hetzner firewall 22→0.0.0.0/0 (kalit-only + fail2ban himoyalaydi) |
