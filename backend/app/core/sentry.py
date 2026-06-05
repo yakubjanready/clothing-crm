@@ -1,5 +1,6 @@
 """Sentry SDK init — agar SENTRY_DSN o'rnatilgan bo'lsa.
 DSN bo'sh bo'lsa, init bo'lmaydi (dev/test'da overhead yo'q)."""
+
 from __future__ import annotations
 
 import logging
@@ -33,6 +34,6 @@ def init_sentry() -> bool:
         )
         logger.info("Sentry initialized for env=%s", settings.APP_ENV)
         return True
-    except Exception:  # noqa: BLE001
+    except Exception:
         logger.exception("Sentry init failed — davom etamiz Sentry'siz")
         return False

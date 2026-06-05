@@ -265,6 +265,7 @@ async def pay_order(
         raise OrderValidationError(f"To'lov qoldiqdan ortiq (qoldiq={remaining}, to'lov={amount})")
 
     customer = await db.get(Customer, order.customer_id)
+    assert customer is not None  # FK ga ishongan holda
     await adjust_customer_debt(db, customer=customer, delta=-amount, actor=actor)
 
     payment = Payment(
@@ -343,6 +344,7 @@ async def cancel_order(
         raise InvalidOrderTransitionError(f"Order {order.status} — bekor qilib bo'lmaydi")
 
     customer = await db.get(Customer, order.customer_id)
+    assert customer is not None  # FK ga ishongan holda
 
     if order.status == OrderStatus.CONFIRMED:
         for item in order.items:
@@ -454,11 +456,14 @@ async def approve_return(db: AsyncSession, *, ret: Return, actor: User | None) -
     if ret.status != ReturnStatus.REQUESTED:
         raise InvalidOrderTransitionError(f"Return {ret.status} — tasdiqlab bo'lmaydi")
     order = await db.get(Order, ret.order_id)
+    assert order is not None  # FK ga ishongan holda
     customer = await db.get(Customer, order.customer_id)
+    assert customer is not None
 
     # Stockka qaytarish
     for item in ret.items:
         oi = await db.get(OrderItem, item.order_item_id)
+        assert oi is not None
         await receive_stock(
             db,
             variant_id=oi.variant_id,
