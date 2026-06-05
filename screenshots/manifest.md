@@ -126,3 +126,12 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | prod__faza15__01-compose-config.png      | 15 | prod_infra | docker-compose.prod.yml — 8 ta xizmat (postgres+volume, redis, backend, celery_worker, celery_beat, frontend, nginx, minio) syntax+env validate |
 | prod__faza15__02-backend-image-build.png | 15 | prod_infra | Backend multi-stage build success: 245MB, non-root uid 1000 (app), gunicorn /home/app/.local/bin, Python 3.12 |
 | prod__faza15__03-nginx-validate.png      | 15 | prod_infra | Reverse proxy `nginx -t` syntax OK (locations: /api/, /api/v1/auth/(login\|refresh), /ws/, /media/, /; gzip, security headers, rate limit) |
+
+## Faza 16 — CI/CD (GitLab pipeline: lint → test → build → deploy, BTEC D.P8)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| cicd__faza16__01-ci-yaml-validate.png | 16 | D.P8 | `.gitlab-ci.yml` YAML syntax OK — 4 stage, 7 job (backend/frontend × lint/test/build + deploy:prod), 4 hidden template (.python .node .docker .main-only) |
+| cicd__faza16__02-stages-overview.png  | 16 | D.P8 | Pipeline strukturasi: `stage`, `image`, `services`, `extends`, `needs`, `rules`, `coverage`, `environment` qatorlari ko'rinadi |
+| cicd__faza16__03-cicd-variables.png   | 16 | D.P8 | GitLab CI/CD Variables ro'yxati: SSH_PRIVATE_KEY (File, Masked, Protected), SERVER_IP, DB_PASSWORD, JWT_SECRET, VITE_API_BASE_URL, VITE_SENTRY_DSN + GitLab auto registry vars |
+| cicd__faza16__04-deploy-flow.png      | 16 | D.P8 | Build → deploy oqimi: registry push, rsync compose+nginx, SSH `docker login` + `pull` + `up -d --no-build` + `alembic upgrade head` + `image prune` |

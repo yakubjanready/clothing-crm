@@ -122,6 +122,87 @@ alembic upgrade head --sql   # SQL chiqarish (DBga tegmasdan, prod review uchun)
 `alembic/env.py`'da ko'rinadigan bo'lishi kerak (`import app.models`).
 Hozircha biznes modellar yo'q — bo'sh placeholder qoldirilgan.
 
+## CI/CD pipeline (GitLab) — BTEC D.P8
+
+Loyiha **GitLab CI/CD** orqali avtomatlashtirilgan: har commit'da kod sifati
+tekshiriladi, testlar yuritiladi, `main`/`master` branch'da Docker image'lar
+qurilib Container Registry'ga push qilinadi va qo'lda tasdiqlashdan keyin
+Hetzner serverga deploy bo'ladi.
+
+### Bosqichlar (`.gitlab-ci.yml`)
+
+```
+┌───────┐   ┌───────┐   ┌───────────────┐   ┌─────────────────┐
+│ lint  │ → │ test  │ → │ build (main)  │ → │ deploy (manual) │
+└───────┘   └───────┘   └───────────────┘   └─────────────────┘
+   │           │              │                     │
+   ├ backend   ├ pytest       ├ backend image       ├ rsync compose+nginx
+   │ ruff      │ + postgres   │ → registry          ├ ssh: pull + up -d
+   │ black     │ + redis      │ (sha + latest)      ├ alembic upgrade head
+   │ mypy      │              ├ frontend image      └ image prune
+   └ frontend  └ vitest       └ → registry
+     eslint      + build
+     prettier
+```
+
+| Stage | Job | Image | Cache | Maqsad |
+|-------|-----|-------|-------|--------|
+| lint    | `backend:lint`   | python:3.12-slim | pip   | `ruff` + `black --check` + `mypy` |
+| lint    | `frontend:lint`  | node:20-alpine   | npm   | `npm run lint` + `format:check` |
+| test    | `backend:test`   | python:3.12-slim | pip   | `pytest --cov-fail-under=80` (services: postgres:16, redis:7) |
+| test    | `frontend:test`  | node:20-alpine   | npm   | `vitest run` + `vite build` |
+| build   | `build:backend`  | docker:27 (dind) | —     | `$CI_REGISTRY_IMAGE/backend:$SHA` + `:latest` (faqat main) |
+| build   | `build:frontend` | docker:27 (dind) | —     | `$CI_REGISTRY_IMAGE/frontend:$SHA` + `:latest` (faqat main) |
+| deploy  | `deploy:prod`    | alpine:3.20      | —     | SSH (Hetzner) → `docker compose pull/up -d` → `alembic upgrade head` (manual) |
+
+### Talab qilinadigan CI/CD Variables
+
+GitLab'da: **Settings → CI/CD → Variables**. Hammasi `Masked` va `Protected`
+bo'lishi kerak (deploy faqat `main`/`master`'da bajariladi).
+
+| Variable | Tur | Tavsif |
+|----------|------|--------|
+| `SSH_PRIVATE_KEY`    | File   | Hetzner `deploy@$SERVER_IP` foydalanuvchisi uchun maxfiy SSH kalit (PEM). Server `~/.ssh/authorized_keys`'ga mos `.pub` qo'shilgan bo'lishi shart. |
+| `SERVER_IP`          | Var    | Hetzner IP yoki DNS (masalan `5.75.xxx.xxx` yoki `crm.example.uz`). |
+| `DB_PASSWORD`        | Masked | PostgreSQL parol (test + prod). |
+| `JWT_SECRET`         | Masked | `SECRET_KEY` (≥32 belgi). Test stage va prod uchun. |
+| `VITE_API_BASE_URL`  | Var    | Ixtiyoriy. Bo'sh qoldirilsa nginx reverse proxy ishlatiladi (`/api/...`). |
+| `VITE_SENTRY_DSN`    | Masked | Ixtiyoriy. Frontend Sentry DSN (`@sentry/react`). |
+| `CI_REGISTRY_*`      | Auto   | GitLab tomonidan avtomatik: `CI_REGISTRY`, `CI_REGISTRY_USER`, `CI_REGISTRY_PASSWORD`, `CI_REGISTRY_IMAGE`. Qo'shimcha registry token shart emas. |
+
+### Server (Hetzner) tayyorgarligi (bir martalik)
+
+```bash
+# Server'da:
+sudo useradd -m -s /bin/bash deploy
+sudo usermod -aG docker deploy
+sudo mkdir -p /opt/crm && sudo chown deploy:deploy /opt/crm
+
+# Local'dan kalitni o'rnatish:
+ssh-copy-id -i ~/.ssh/crm_deploy.pub deploy@$SERVER_IP
+
+# Server'da .env.prod ni tayyorlash:
+ssh deploy@$SERVER_IP "cd /opt/crm && nano .env.prod"   # .env.prod.example asosida
+
+# Bir martalik bootstrap (registry login + birinchi seed):
+ssh deploy@$SERVER_IP "
+  cd /opt/crm &&
+  docker login registry.gitlab.com &&
+  docker compose -f docker-compose.prod.yml --env-file .env.prod up -d &&
+  docker compose -f docker-compose.prod.yml exec backend python -m app.scripts.seed_rbac
+"
+```
+
+### Lokal'da pipeline'ni simulyatsiya qilish
+
+```bash
+# YAML sintaksisi (gitlab-ci-local — npm paketi):
+npx --yes gitlab-ci-local --list
+
+# Bitta jobni lokal'da bajarish:
+npx --yes gitlab-ci-local backend:lint
+```
+
 ## Faza intizomi
 
 Har bir faza yakuni: **TEST → SCREENSHOT → COMMIT → "FAZA N TUGADI"**.
