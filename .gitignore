@@ -48,6 +48,9 @@ coverage/
 *.local
 .eslintcache
 
+# --- TS build cache ---
+*.tsbuildinfo
+
 # --- Editors / OS ---
 .idea/
 .vscode/
