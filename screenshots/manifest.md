@@ -93,3 +93,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | notify__faza11__01-pytest-green.png       | 11 | notification | 202 ta test yashil (notification 12: notify() service 3, WS auth 3, REST 5, auto-trigger 1) |
 | notify__faza11__02-alembic-migrations.png | 11 | notification | Alembic: finance → notifications; user_id FK CASCADE |
 | notify__faza11__03-db-tables.png          | 11 | notification | Real Postgres: 37 jadval, notifications table (type/severity index, read_at index, data JSON) |
+
+## Faza 12 — Frontend skelet (React+TS+Vite+Tailwind+shadcn+Router+Query+Zustand+i18n+theme)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| frontend__faza12__01-vitest-green.png  | 12 | frontend | 6 ta vitest yashil (App: 2, auth store: 4) — login form, ProtectedRoute redirect, Zustand login/logout/hasRole |
+| frontend__faza12__02-build-success.png | 12 | frontend | TypeScript build + Vite bundle muvaffaqiyatli (1832 modul, ~505KB JS gzipped 159KB, ~17KB CSS) |
+| frontend__faza12__03-tree.png          | 12 | frontend | 39 ta fayl: lib (api+i18n+utils), stores (auth+test), components (ui/8 + layout/5 + common/6 + auth + theme), pages (5), locales (uz/ru/en) |

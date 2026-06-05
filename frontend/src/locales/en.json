@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "actions": "Actions",
+    "no_data": "No data",
+    "error": "An error occurred",
+    "success": "Success",
+    "yes": "Yes",
+    "no": "No",
+    "back": "Back",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "auth": {
+    "title": "Sign in",
+    "subtitle": "Wholesale clothing CRM",
+    "email": "Email",
+    "password": "Password",
+    "login": "Sign in",
+    "logging_in": "Signing in...",
+    "invalid_credentials": "Invalid email or password",
+    "logout_success": "Signed out"
+  },
+  "modules": {
+    "dashboard": "Dashboard",
+    "hr": "HR",
+    "hr_departments": "Departments",
+    "hr_positions": "Positions",
+    "hr_employees": "Employees",
+    "catalog": "Catalog",
+    "catalog_categories": "Categories",
+    "catalog_brands": "Brands",
+    "catalog_products": "Products",
+    "warehouse": "Warehouse",
+    "warehouse_warehouses": "Warehouses",
+    "warehouse_stock": "Stock",
+    "warehouse_movements": "Movements",
+    "warehouse_inventory": "Inventory",
+    "customers": "Customers",
+    "sales": "Sales",
+    "sales_orders": "Orders",
+    "sales_invoices": "Invoices",
+    "sales_returns": "Returns",
+    "procurement": "Procurement",
+    "procurement_suppliers": "Suppliers",
+    "procurement_purchases": "Purchases",
+    "finance": "Finance",
+    "finance_accounts": "Accounts",
+    "finance_payments": "Payments",
+    "finance_debts": "Debts",
+    "notifications": "Notifications",
+    "audit": "Audit log",
+    "users": "Users"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "welcome_message": "Welcome to the wholesale clothing CRM",
+    "quick_stats": "Quick stats"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "uz": "O'zbek",
+    "ru": "Русский",
+    "en": "English"
+  }
+}

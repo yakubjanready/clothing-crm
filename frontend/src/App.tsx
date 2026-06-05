@@ -1,65 +1,93 @@
-import { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Toaster } from "sonner";
 
-import { Button } from "@/components/ui/button";
-import { API_BASE_URL } from "@/lib/utils";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { ThemeProvider } from "@/components/theme-provider";
+import "@/lib/i18n";
+import { DashboardPage } from "@/pages/DashboardPage";
+import { LoginPage } from "@/pages/LoginPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
+import { PlaceholderPage } from "@/pages/PlaceholderPage";
 
-type HealthStatus = "idle" | "loading" | "ok" | "error";
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
-interface HealthBody {
-  status: string;
-  app: string;
-  env: string;
-  version: string;
-}
+// Yangi modul to'liq amalga oshirilganda PlaceholderPage o'rniga
+// haqiqiy pagelar import qilinadi.
+const ph = (key: string) => <PlaceholderPage titleKey={key} />;
 
 export default function App() {
-  const [status, setStatus] = useState<HealthStatus>("idle");
-  const [body, setBody] = useState<HealthBody | null>(null);
-
-  async function pingHealth() {
-    setStatus("loading");
-    try {
-      const res = await fetch(`${API_BASE_URL}/health`);
-      if (!res.ok) throw new Error(String(res.status));
-      setBody((await res.json()) as HealthBody);
-      setStatus("ok");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  useEffect(() => {
-    void pingHealth();
-  }, []);
-
   return (
-    <main className="container mx-auto max-w-2xl py-16">
-      <h1 className="text-3xl font-bold tracking-tight">
-        Ulgurji Kiyim-kechak CRM
-      </h1>
-      <p className="mt-2 text-muted-foreground">
-        Faza 1 — skelet. Backend bilan ulanish tekshiruvi.
-      </p>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
 
-      <section className="mt-8 rounded-lg border p-6">
-        <div className="flex items-center justify-between">
-          <span className="font-medium">Backend /health</span>
-          <span
-            data-testid="health-status"
-            className="rounded-md bg-muted px-3 py-1 text-sm"
-          >
-            {status}
-          </span>
-        </div>
-        {body && (
-          <pre className="mt-4 overflow-x-auto rounded-md bg-muted p-4 text-xs">
-            {JSON.stringify(body, null, 2)}
-          </pre>
-        )}
-        <Button className="mt-4" onClick={pingHealth}>
-          Qayta tekshirish
-        </Button>
-      </section>
-    </main>
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<DashboardPage />} />
+
+                {/* HR */}
+                <Route path="/hr" element={<Navigate to="/hr/employees" replace />} />
+                <Route path="/hr/departments" element={ph("modules.hr_departments")} />
+                <Route path="/hr/positions"   element={ph("modules.hr_positions")} />
+                <Route path="/hr/employees"   element={ph("modules.hr_employees")} />
+
+                {/* Catalog */}
+                <Route path="/catalog" element={<Navigate to="/catalog/products" replace />} />
+                <Route path="/catalog/categories" element={ph("modules.catalog_categories")} />
+                <Route path="/catalog/brands"     element={ph("modules.catalog_brands")} />
+                <Route path="/catalog/products"   element={ph("modules.catalog_products")} />
+
+                {/* Warehouse */}
+                <Route path="/warehouse" element={<Navigate to="/warehouse/warehouses" replace />} />
+                <Route path="/warehouse/warehouses" element={ph("modules.warehouse_warehouses")} />
+                <Route path="/warehouse/stock"      element={ph("modules.warehouse_stock")} />
+                <Route path="/warehouse/movements"  element={ph("modules.warehouse_movements")} />
+                <Route path="/warehouse/inventory"  element={ph("modules.warehouse_inventory")} />
+
+                {/* Customers */}
+                <Route path="/customers" element={ph("modules.customers")} />
+
+                {/* Sales */}
+                <Route path="/sales" element={<Navigate to="/sales/orders" replace />} />
+                <Route path="/sales/orders"   element={ph("modules.sales_orders")} />
+                <Route path="/sales/invoices" element={ph("modules.sales_invoices")} />
+                <Route path="/sales/returns"  element={ph("modules.sales_returns")} />
+
+                {/* Procurement */}
+                <Route path="/procurement" element={<Navigate to="/procurement/suppliers" replace />} />
+                <Route path="/procurement/suppliers" element={ph("modules.procurement_suppliers")} />
+                <Route path="/procurement/purchases" element={ph("modules.procurement_purchases")} />
+
+                {/* Finance */}
+                <Route path="/finance" element={<Navigate to="/finance/accounts" replace />} />
+                <Route path="/finance/accounts" element={ph("modules.finance_accounts")} />
+                <Route path="/finance/payments" element={ph("modules.finance_payments")} />
+                <Route path="/finance/debts"    element={ph("modules.finance_debts")} />
+
+                {/* Notifications / Audit / Users */}
+                <Route path="/notifications" element={ph("modules.notifications")} />
+                <Route path="/audit"         element={ph("modules.audit")} />
+                <Route path="/users"         element={ph("modules.users")} />
+              </Route>
+            </Route>
+
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+          <Toaster richColors position="top-right" />
+        </BrowserRouter>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

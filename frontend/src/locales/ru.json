@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Изменить",
+    "create": "Создать",
+    "search": "Поиск",
+    "actions": "Действия",
+    "no_data": "Нет данных",
+    "error": "Произошла ошибка",
+    "success": "Успешно",
+    "yes": "Да",
+    "no": "Нет",
+    "back": "Назад",
+    "logout": "Выход",
+    "profile": "Профиль",
+    "settings": "Настройки"
+  },
+  "auth": {
+    "title": "Вход в систему",
+    "subtitle": "Оптовая CRM одежды",
+    "email": "Email",
+    "password": "Пароль",
+    "login": "Войти",
+    "logging_in": "Вход...",
+    "invalid_credentials": "Неверный email или пароль",
+    "logout_success": "Вы вышли из системы"
+  },
+  "modules": {
+    "dashboard": "Панель управления",
+    "hr": "HR",
+    "hr_departments": "Отделы",
+    "hr_positions": "Должности",
+    "hr_employees": "Сотрудники",
+    "catalog": "Каталог",
+    "catalog_categories": "Категории",
+    "catalog_brands": "Бренды",
+    "catalog_products": "Товары",
+    "warehouse": "Склад",
+    "warehouse_warehouses": "Склады",
+    "warehouse_stock": "Остатки",
+    "warehouse_movements": "Движения",
+    "warehouse_inventory": "Инвентаризация",
+    "customers": "Клиенты",
+    "sales": "Продажи",
+    "sales_orders": "Заказы",
+    "sales_invoices": "Счета",
+    "sales_returns": "Возвраты",
+    "procurement": "Закупки",
+    "procurement_suppliers": "Поставщики",
+    "procurement_purchases": "Закупки",
+    "finance": "Финансы",
+    "finance_accounts": "Счета",
+    "finance_payments": "Платежи",
+    "finance_debts": "Долги",
+    "notifications": "Уведомления",
+    "audit": "Журнал аудита",
+    "users": "Пользователи"
+  },
+  "dashboard": {
+    "welcome": "Добро пожаловать",
+    "welcome_message": "Добро пожаловать в оптовую CRM одежды",
+    "quick_stats": "Быстрая статистика"
+  },
+  "theme": {
+    "light": "Светлая",
+    "dark": "Тёмная",
+    "system": "Системная"
+  },
+  "language": {
+    "uz": "O'zbek",
+    "ru": "Русский",
+    "en": "English"
+  }
+}

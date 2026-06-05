@@ -1,0 +1,77 @@
+{
+  "common": {
+    "loading": "Yuklanmoqda...",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "delete": "O'chirish",
+    "edit": "Tahrirlash",
+    "create": "Yaratish",
+    "search": "Qidiruv",
+    "actions": "Amallar",
+    "no_data": "Ma'lumot yo'q",
+    "error": "Xatolik yuz berdi",
+    "success": "Muvaffaqiyatli",
+    "yes": "Ha",
+    "no": "Yo'q",
+    "back": "Orqaga",
+    "logout": "Chiqish",
+    "profile": "Profil",
+    "settings": "Sozlamalar"
+  },
+  "auth": {
+    "title": "Tizimga kirish",
+    "subtitle": "Ulgurji kiyim-kechak CRM",
+    "email": "Email",
+    "password": "Parol",
+    "login": "Kirish",
+    "logging_in": "Kirilmoqda...",
+    "invalid_credentials": "Email yoki parol noto'g'ri",
+    "logout_success": "Tizimdan chiqdingiz"
+  },
+  "modules": {
+    "dashboard": "Boshqaruv paneli",
+    "hr": "HR",
+    "hr_departments": "Bo'limlar",
+    "hr_positions": "Lavozimlar",
+    "hr_employees": "Xodimlar",
+    "catalog": "Katalog",
+    "catalog_categories": "Kategoriyalar",
+    "catalog_brands": "Brendlar",
+    "catalog_products": "Mahsulotlar",
+    "warehouse": "Ombor",
+    "warehouse_warehouses": "Omborlar",
+    "warehouse_stock": "Qoldiqlar",
+    "warehouse_movements": "Harakatlar",
+    "warehouse_inventory": "Inventarizatsiya",
+    "customers": "Mijozlar",
+    "sales": "Sotuv",
+    "sales_orders": "Buyurtmalar",
+    "sales_invoices": "Hisob-fakturalar",
+    "sales_returns": "Qaytarishlar",
+    "procurement": "Ta'minot",
+    "procurement_suppliers": "Yetkazib beruvchilar",
+    "procurement_purchases": "Sotib olishlar",
+    "finance": "Moliya",
+    "finance_accounts": "Hisoblar",
+    "finance_payments": "To'lovlar",
+    "finance_debts": "Qarzlar",
+    "notifications": "Bildirishnomalar",
+    "audit": "Audit jurnal",
+    "users": "Foydalanuvchilar"
+  },
+  "dashboard": {
+    "welcome": "Xush kelibsiz",
+    "welcome_message": "Ulgurji kiyim-kechak CRM tizimiga xush kelibsiz",
+    "quick_stats": "Tezkor statistika"
+  },
+  "theme": {
+    "light": "Yorug'",
+    "dark": "Qorong'i",
+    "system": "Tizim"
+  },
+  "language": {
+    "uz": "O'zbek",
+    "ru": "Русский",
+    "en": "English"
+  }
+}
