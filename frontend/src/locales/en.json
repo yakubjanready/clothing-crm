@@ -16,7 +16,9 @@
     "back": "Back",
     "logout": "Logout",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "all": "All",
+    "all_roles": "All roles"
   },
   "auth": {
     "title": "Sign in",
@@ -113,6 +115,40 @@
     "error_toast": "Something went wrong",
     "no_image": "No image",
     "drop_images": "Drop images here or click to choose"
+  },
+  "users": {
+    "list_title": "Users",
+    "list_description": "System users — roles, statuses, password reset",
+    "new": "New user",
+    "edit": "Edit",
+    "filter_role": "Role",
+    "filter_status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "include_deleted": "Include deleted",
+    "exclude_deleted": "Active only",
+    "no_roles": "No roles found",
+    "reset_password": "Reset password",
+    "reset_password_desc": "A new password will be set. The user will not be able to log in with the old one.",
+    "email_taken": "This email is already registered",
+    "cannot_self_deactivate": "You cannot deactivate yourself",
+    "cannot_self_role": "You cannot change your own roles",
+    "fields": {
+      "full_name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "new_password": "New password",
+      "roles": "Roles",
+      "is_active": "Active"
+    },
+    "delete_confirm_title": "Delete user",
+    "delete_confirm_desc": "Soft delete. Can be restored later.",
+    "created_toast": "User created",
+    "updated_toast": "User updated",
+    "deleted_toast": "User deleted",
+    "restored_toast": "User restored",
+    "password_reset_toast": "Password updated",
+    "error_toast": "Something went wrong"
   },
   "variants": {
     "title": "Variants",

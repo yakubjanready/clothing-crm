@@ -16,7 +16,9 @@
     "back": "Orqaga",
     "logout": "Chiqish",
     "profile": "Profil",
-    "settings": "Sozlamalar"
+    "settings": "Sozlamalar",
+    "all": "Hammasi",
+    "all_roles": "Barcha rollar"
   },
   "auth": {
     "title": "Tizimga kirish",
@@ -113,6 +115,40 @@
     "error_toast": "Xatolik yuz berdi",
     "no_image": "Rasm yo'q",
     "drop_images": "Rasmlarni shu yerga tashlang yoki tanlang"
+  },
+  "users": {
+    "list_title": "Foydalanuvchilar",
+    "list_description": "Tizim foydalanuvchilari — rollar, holatlar, parol tiklash",
+    "new": "Yangi foydalanuvchi",
+    "edit": "Tahrirlash",
+    "filter_role": "Rol",
+    "filter_status": "Holat",
+    "active": "Faol",
+    "inactive": "Faol emas",
+    "include_deleted": "O'chirilganlar bilan",
+    "exclude_deleted": "Faqat amaldagi",
+    "no_roles": "Rol topilmadi",
+    "reset_password": "Parolni tiklash",
+    "reset_password_desc": "Foydalanuvchiga yangi parol o'rnatiladi. Bu amaldan keyin u eski parol bilan kira olmaydi.",
+    "email_taken": "Bu email allaqachon ro'yxatdan o'tgan",
+    "cannot_self_deactivate": "O'zingizni deaktiv qila olmaysiz",
+    "cannot_self_role": "O'zingizning rollaringizni o'zgartira olmaysiz",
+    "fields": {
+      "full_name": "F.I.SH",
+      "email": "Email",
+      "password": "Parol",
+      "new_password": "Yangi parol",
+      "roles": "Rollar",
+      "is_active": "Faol"
+    },
+    "delete_confirm_title": "Foydalanuvchini o'chirish",
+    "delete_confirm_desc": "Yumshoq o'chirish. Keyin tiklash mumkin.",
+    "created_toast": "Foydalanuvchi yaratildi",
+    "updated_toast": "Foydalanuvchi yangilandi",
+    "deleted_toast": "Foydalanuvchi o'chirildi",
+    "restored_toast": "Foydalanuvchi tiklandi",
+    "password_reset_toast": "Parol yangilandi",
+    "error_toast": "Xatolik yuz berdi"
   },
   "variants": {
     "title": "Variantlar",

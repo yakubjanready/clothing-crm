@@ -2,7 +2,7 @@
 
 Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 
-## ✅ Bajarilgan (Faza 1–19)
+## ✅ Bajarilgan (Faza 1–20)
 
 ### Backend
 - [x] FastAPI skeleti + async SQLAlchemy + Alembic + PostgreSQL + Redis + Celery (Faza 1–2)
@@ -17,6 +17,7 @@ Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 - [x] Bildirishnomalar: Notification + WebSocket (JWT auth) + Redis Pub/Sub (Faza 11)
 - [x] Quality: 216 test (coverage 80%), ruff + black + mypy + pre-commit (Faza 14)
 - [x] Audit log: barcha auth + kritik amallar (Faza 19)
+- [x] Users API: list (search/role/active filter), patch, soft-delete, restore, parol reset, /roles, /me/permissions (Faza 20)
 - [x] Brute-force lockout: 5 ta xato → 15 daqiqa (Faza 19)
 - [x] Log redaction: maxfiy maydonlar `***REDACTED***` (Faza 19)
 - [x] DB performance indekslar (12 ta yangi) (Faza 19)
@@ -27,6 +28,7 @@ Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 - [x] i18n (uz/ru/en) + theme (dark/light) (Faza 12)
 - [x] Products UI (list+filter+create+edit+detail+variants+drag-drop) (Faza 13)
 - [x] ESLint + Prettier + vitest + coverage (Faza 14)
+- [x] Users UI (list+filter+role multi-select+create+edit+reset-password+restore) (Faza 20)
 
 ### Infra
 - [x] Production Dockerfile (multi-stage non-root) + docker-compose.prod (Faza 15)

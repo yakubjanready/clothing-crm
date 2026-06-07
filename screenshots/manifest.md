@@ -162,3 +162,13 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | sec__faza19__03-security-headers.png     | 19 | security | Live tekshiruv (http://138.199.218.108): X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, CSP, Referrer-Policy, Permissions-Policy headers; nginx rate_limit zonalari |
 | sec__faza19__04-audit-log-flow.png       | 19 | audit | Audit log oqim: login (success/failed)/logout har biri activity_logs jadvalga IP, action, entity_id, changes JSON bilan yoziladi; Redis brute-force lockout (5 fail → 15 daq) |
 | sec__faza19__05-faza19-summary.png       | 19 | security+B.M2/D.M4 | Faza 19 to'liq yakuni: 10 ta xavfsizlik elementi, 5 ta optimizatsiya o'lchovi, 5 ta hujjat (README, BENCHMARKS, ROADMAP, DEPLOY, /docs) |
+
+## Faza 20 — Foydalanuvchilar bo'limi (Users + Roles, BTEC C.M3)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| users__faza20__01-pytest-green.png    | 20 | users | 19/19 backend test yashil: list (5 ta — search, role/active filter, permission), get (2), patch (6 — name/roles/audit + self-block), delete/restore (2), reset-password (2), roles/me-permissions (2) |
+| users__faza20__02-vitest-green.png    | 20 | users | 10/10 frontend zod test: userCreateSchema (email/parol≥8/full_name/role_ids), userEditSchema (is_active boolean), passwordResetSchema |
+| users__faza20__03-endpoints.png       | 20 | users | Yangi REST routelar: GET/PATCH/DELETE /users, /restore, /reset-password, /me/permissions + GET /roles (permission_codes bilan) |
+| users__faza20__04-frontend-tree.png   | 20 | users | Frontend struktura: src/pages/users/* (List/Create/Edit/Form/RolesMultiSelect + schema testi), src/api/users.ts, types.ts'ga AppUser+Role qo'shildi |
+| users__faza20__05-build-success.png   | 20 | users | Vite production build muvaffaqiyatli — 2119 ta modul, 734 KB → 222 KB gzip; foydalanuvchilar sahifalari TS strict mode'da o'tdi |

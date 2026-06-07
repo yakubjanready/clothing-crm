@@ -77,3 +77,26 @@ export interface ImageUploadResponse {
   content_type: string;
   size_bytes: number;
 }
+
+// ---- Users / Roles ----
+
+export interface RoleSummary {
+  id: string;
+  name: string;
+  description?: string | null;
+}
+
+export interface AppUser {
+  id: string;
+  email: string;
+  full_name: string;
+  is_active: boolean;
+  roles: RoleSummary[];
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  description?: string | null;
+  permission_codes: string[];
+}

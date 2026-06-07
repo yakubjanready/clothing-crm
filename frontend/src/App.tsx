@@ -14,6 +14,9 @@ import { DashboardPage } from "@/pages/DashboardPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { PlaceholderPage } from "@/pages/PlaceholderPage";
+import { UserCreatePage } from "@/pages/users/UserCreatePage";
+import { UserEditPage } from "@/pages/users/UserEditPage";
+import { UsersListPage } from "@/pages/users/UsersListPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,7 +101,9 @@ export default function App() {
                 {/* Notifications / Audit / Users */}
                 <Route path="/notifications" element={ph("modules.notifications")} />
                 <Route path="/audit" element={ph("modules.audit")} />
-                <Route path="/users" element={ph("modules.users")} />
+                <Route path="/users" element={<UsersListPage />} />
+                <Route path="/users/new" element={<UserCreatePage />} />
+                <Route path="/users/:id/edit" element={<UserEditPage />} />
               </Route>
             </Route>
 

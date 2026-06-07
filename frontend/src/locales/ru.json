@@ -16,7 +16,9 @@
     "back": "Назад",
     "logout": "Выход",
     "profile": "Профиль",
-    "settings": "Настройки"
+    "settings": "Настройки",
+    "all": "Все",
+    "all_roles": "Все роли"
   },
   "auth": {
     "title": "Вход в систему",
@@ -113,6 +115,40 @@
     "error_toast": "Произошла ошибка",
     "no_image": "Нет изображения",
     "drop_images": "Перетащите изображения сюда или выберите"
+  },
+  "users": {
+    "list_title": "Пользователи",
+    "list_description": "Пользователи системы — роли, статусы, сброс пароля",
+    "new": "Новый пользователь",
+    "edit": "Редактировать",
+    "filter_role": "Роль",
+    "filter_status": "Статус",
+    "active": "Активен",
+    "inactive": "Неактивен",
+    "include_deleted": "Включая удалённых",
+    "exclude_deleted": "Только действующие",
+    "no_roles": "Роли не найдены",
+    "reset_password": "Сбросить пароль",
+    "reset_password_desc": "Будет установлен новый пароль. После этого пользователь не сможет войти со старым паролем.",
+    "email_taken": "Этот email уже зарегистрирован",
+    "cannot_self_deactivate": "Нельзя деактивировать себя",
+    "cannot_self_role": "Нельзя менять свои роли",
+    "fields": {
+      "full_name": "ФИО",
+      "email": "Email",
+      "password": "Пароль",
+      "new_password": "Новый пароль",
+      "roles": "Роли",
+      "is_active": "Активен"
+    },
+    "delete_confirm_title": "Удалить пользователя",
+    "delete_confirm_desc": "Мягкое удаление. Можно восстановить позже.",
+    "created_toast": "Пользователь создан",
+    "updated_toast": "Пользователь обновлён",
+    "deleted_toast": "Пользователь удалён",
+    "restored_toast": "Пользователь восстановлен",
+    "password_reset_toast": "Пароль обновлён",
+    "error_toast": "Произошла ошибка"
   },
   "variants": {
     "title": "Варианты",
