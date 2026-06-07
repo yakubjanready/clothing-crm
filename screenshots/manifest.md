@@ -181,3 +181,11 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | rbac__faza21__02-permissions-matrix.png | 21 | rbac_ui | Rol bo'yicha sidebar matritsasi: warehouse-only user faqat Dashboard + Warehouse ko'radi; sales user — Customers + Sales; hr user — HR; admin — barchasi (9 modul) |
 | rbac__faza21__03-arch.png               | 21 | rbac_ui | Implementation: auth store'da permissionCodes, PermissionGate komponenti, nav-items.requires + filterNav, login oqimida /auth/me + /users/me/permissions parallel chaqiruv |
 | rbac__faza21__04-build-success.png      | 21 | rbac_ui | Vite production build — 737 KB → 223 KB gzip; PermissionGate + filterNav qo'shilgani holda TS strict, ESLint, Prettier — barchasi toza |
+
+## Faza 22 — Domen (negative.uz) + Let's Encrypt TLS (BTEC M.P3 yakuni)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| domain__faza22__01-arch.png            | 22 | tls_domain | DNS yo'nalish (A negative.uz/www -> 138.199.218.108); nginx 4 server bloki (80 default+ACME, 80 redirect, 443 www->apex, 443 main); docker-compose'ga certbot xizmati + 2 ta volume; init-letsencrypt.sh oqimi (dummy cert -> nginx -> certbot -> reload); HSTS+CSP qo'shildi |
+| domain__faza22__02-files-and-tests.png | 22 | tls_domain | O'zgargan fayllar: nginx.conf, docker-compose.prod.yml, scripts/init-letsencrypt.sh, .env.prod, .env.prod.example, .gitlab-ci.yml, DEPLOY.md; volumelar: crm_certbot_certs (live certs + dhparam), crm_certbot_webroot (HTTP-01 challenge) |
+| domain__faza22__03-tests-green.png     | 22 | tls_domain | Regressiya yo'q: 235/235 backend pytest + 32/32 frontend vitest yashil; ESLint+Prettier+ruff+black+mypy — barchasi toza |

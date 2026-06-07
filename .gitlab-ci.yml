@@ -189,8 +189,13 @@ deploy:prod:
     # 4.1) Konfiguratsiya fayllarini serverga uzatish
     - rsync -az --delete docker-compose.prod.yml "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/"
     - rsync -az --delete nginx/                  "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/nginx/"
-    - rsync -az --delete scripts/                "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/scripts/"
+    - rsync -az --delete --chmod=u+x scripts/    "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/scripts/"
     # 4.2) Serverda: registry login → pull → up → alembic upgrade head → tozalash
+    #
+    # ESLATMA (TLS): birinchi marta deploy qilishdan oldin SERVERda BIR MARTA
+    # `sudo ./scripts/init-letsencrypt.sh` ishga tushiriladi. U Let's Encrypt
+    # sertifikatini oladi va volume'ga saqlaydi. Keyingi deploylar avtomatik
+    # ravishda mavjud cert'ni ishlatadi (har 6 soatda nginx reload + har 12 soatda renewal).
     - |
       ssh "$REMOTE_USER@$SERVER_IP" "set -euo pipefail; \
         cd $REMOTE_DIR && \

@@ -2,7 +2,7 @@
 
 Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 
-## ✅ Bajarilgan (Faza 1–21)
+## ✅ Bajarilgan (Faza 1–22)
 
 ### Backend
 - [x] FastAPI skeleti + async SQLAlchemy + Alembic + PostgreSQL + Redis + Celery (Faza 1–2)
@@ -40,13 +40,13 @@ Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 - [x] Hetzner Cloud real deploy (hcloud + VPC + Firewall + cloud-init) (Faza 17)
 - [x] CI/CD avtomatik deploy ishladi (registry + SSH + alembic) (Faza 18)
 - [x] CSP + qo'shimcha security headers (Faza 19)
+- [x] **Domen + HTTPS** — negative.uz, Let's Encrypt avtomatik renewal, HSTS (Faza 22)
 
 ---
 
 ## 🚧 Yaqin kelajak (1–3 oy)
 
 ### Xavfsizlik
-- [ ] **HTTPS/Domen** — Let's Encrypt (certbot) + HSTS yoqish + nginx 443 server bloki
 - [ ] **2FA** (TOTP yoki email OTP) — admin va director rollari uchun majburiy
 - [ ] **API key auth** — server-to-server integratsiyalar uchun (1C, marketplaces)
 - [ ] **Session devices** — qaysi qurilmalardan login bo'lganini ko'rish va remote logout

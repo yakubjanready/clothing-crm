@@ -145,19 +145,45 @@ ssh -L 19999:127.0.0.1:19999 -i infra/secrets/id_ed25519_crm deploy@138.199.218.
 
 Ko'rsatkichlar: CPU, RAM, disk I/O, tarmoq, har bir Docker container, Docker daemon, nginx, postgres, redis.
 
-## ⑤ Domen va HTTPS qo'shish (kelajakda)
+## ⑤ Domen va HTTPS (negative.uz)
 
-Hozircha **IP bilan** ishlamoqda. Domen qo'shishganda:
+Production domen: **https://negative.uz** (+ `www.negative.uz` → apex redirect).
 
-1. **DNS A-record** — domeningiz DNS'ida `crm.example.uz` → `138.199.218.108`
-2. **nginx/nginx.conf** — `server_name crm.example.uz;` qo'shish
-3. **Let's Encrypt** (certbot Docker bilan):
+**Talab (bir martalik tayyorgarlik):**
+
+1. **DNS A-record** — registrar/DNS panelida:
+   - `negative.uz` → `138.199.218.108`
+   - `www.negative.uz` → `138.199.218.108`
+   - TTL: 300s (testlash uchun), keyin 3600s
+   - Tekshiruv: `nslookup negative.uz` → server IP'i qaytishi kerak
+2. **Hetzner firewall** — 443 allaqachon ochiq (`infra/hetzner/firewall-rules.json`)
+3. **`.env.prod`** — `DOMAIN=negative.uz`, `CERTBOT_EMAIL=admin@negative.uz` qo'shilgan
+4. **Stack'ni yangilash** (yangi nginx.conf + certbot xizmati keladi):
    ```bash
-   docker run -it --rm -v /etc/letsencrypt:/etc/letsencrypt \
-     -p 80:80 certbot/certbot certonly --standalone -d crm.example.uz
+   ssh deploy@138.199.218.108
+   cd /opt/crm
+   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --no-build --remove-orphans
    ```
-4. **nginx.conf**'da 443 server bloki + `ssl_certificate /etc/letsencrypt/.../fullchain.pem` (`docker-compose.prod.yml`'da volume mount)
-5. **HSTS** yoqish (nginx'da hozir kommentlangan)
+5. **Birinchi sertifikatni olish** (BIR MARTA, idempotent):
+   ```bash
+   sudo ./scripts/init-letsencrypt.sh
+   ```
+   - Dummy cert yaratiladi → nginx ko'tariladi → certbot real cert oladi → nginx reload
+   - Staging rejimida sinash uchun: `CERTBOT_STAGING=1 sudo ./scripts/init-letsencrypt.sh`
+
+**Avtomatik renewal:**
+- `crm-certbot` konteyneri har 12 soatda `certbot renew` ishga tushiradi
+- `crm-nginx` har 6 soatda `nginx -s reload` qiladi — yangilangan cert kuchga kiradi
+- Hech qanday cron yoki qo'shimcha sozlash kerak emas
+
+**Xavfsizlik headers** (TLS server blokida yoqilgan):
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload` (HSTS)
+- CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy
+
+**Qaytish (rollback):**
+Agar cert olishda muammo bo'lsa, vaqtincha eski nginx config'iga qaytarish uchun
+`git revert` qilib qaytadan deploy qiling. Cert volumelar (`crm_certbot_certs`,
+`crm_certbot_webroot`) saqlanadi — keyingi marta init-letsencrypt darhol ishlaydi.
 
 ## ⑥ Yangilash va deploy
 
