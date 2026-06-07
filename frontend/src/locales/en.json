@@ -18,7 +18,9 @@
     "profile": "Profile",
     "settings": "Settings",
     "all": "All",
-    "all_roles": "All roles"
+    "all_roles": "All roles",
+    "forbidden_title": "Access denied",
+    "forbidden_desc": "Your role does not permit viewing this section. Please contact an administrator."
   },
   "auth": {
     "title": "Sign in",

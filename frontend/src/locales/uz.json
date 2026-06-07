@@ -18,7 +18,9 @@
     "profile": "Profil",
     "settings": "Sozlamalar",
     "all": "Hammasi",
-    "all_roles": "Barcha rollar"
+    "all_roles": "Barcha rollar",
+    "forbidden_title": "Ruxsat yo'q",
+    "forbidden_desc": "Sizning rolingiz bu bo'limni ko'rishga ruxsat bermaydi. Administrator bilan bog'laning."
   },
   "auth": {
     "title": "Tizimga kirish",

@@ -31,13 +31,16 @@ export function LoginPage() {
   const m = useMutation({
     mutationFn: async (vars: { email: string; password: string }) => {
       const tokens = (await api.post<LoginResp>("/auth/login", vars)).data;
-      // Tokenlar oldindan o'rnatiladi, keyin /me ni chaqirish
+      // Tokenlar oldindan o'rnatiladi, keyin /me + permission'larni chaqirish
       useAuthStore.getState().setTokens(tokens.access_token, tokens.refresh_token);
-      const me = (await api.get<AuthUser>("/auth/me")).data;
-      return { tokens, me };
+      const [meResp, permsResp] = await Promise.all([
+        api.get<AuthUser>("/auth/me"),
+        api.get<string[]>("/users/me/permissions"),
+      ]);
+      return { tokens, me: meResp.data, permissions: permsResp.data };
     },
-    onSuccess: ({ tokens, me }) => {
-      login(tokens.access_token, tokens.refresh_token, me);
+    onSuccess: ({ tokens, me, permissions }) => {
+      login(tokens.access_token, tokens.refresh_token, me, permissions);
       const from =
         (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/";
       navigate(from, { replace: true });

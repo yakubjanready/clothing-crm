@@ -2,7 +2,7 @@
 
 Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 
-## ✅ Bajarilgan (Faza 1–20)
+## ✅ Bajarilgan (Faza 1–21)
 
 ### Backend
 - [x] FastAPI skeleti + async SQLAlchemy + Alembic + PostgreSQL + Redis + Celery (Faza 1–2)
@@ -29,6 +29,7 @@ Loyiha yo'l xaritasi: bajarilgan ishlar va kelajakdagi rejalar.
 - [x] Products UI (list+filter+create+edit+detail+variants+drag-drop) (Faza 13)
 - [x] ESLint + Prettier + vitest + coverage (Faza 14)
 - [x] Users UI (list+filter+role multi-select+create+edit+reset-password+restore) (Faza 20)
+- [x] Rol-asoslangan UI yashirish: sidebar filter + route PermissionGate + 403 ko'rinish (Faza 21)
 
 ### Infra
 - [x] Production Dockerfile (multi-stage non-root) + docker-compose.prod (Faza 15)

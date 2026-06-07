@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "sonner";
 
+import { PermissionGate } from "@/components/auth/PermissionGate";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -32,6 +33,11 @@ const queryClient = new QueryClient({
 // haqiqiy pagelar import qilinadi.
 const ph = (key: string) => <PlaceholderPage titleKey={key} />;
 
+/** Permission talabini routega o'rab beradi — ruxsat bo'lmasa 403 ko'rinishi chiqadi. */
+const gate = (perm: string, el: React.ReactNode) => (
+  <PermissionGate anyOf={[perm]}>{el}</PermissionGate>
+);
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -46,37 +52,79 @@ export default function App() {
 
                 {/* HR */}
                 <Route path="/hr" element={<Navigate to="/hr/employees" replace />} />
-                <Route path="/hr/departments" element={ph("modules.hr_departments")} />
-                <Route path="/hr/positions" element={ph("modules.hr_positions")} />
-                <Route path="/hr/employees" element={ph("modules.hr_employees")} />
+                <Route
+                  path="/hr/departments"
+                  element={gate("hr:read", ph("modules.hr_departments"))}
+                />
+                <Route path="/hr/positions" element={gate("hr:read", ph("modules.hr_positions"))} />
+                <Route path="/hr/employees" element={gate("hr:read", ph("modules.hr_employees"))} />
 
                 {/* Catalog */}
                 <Route path="/catalog" element={<Navigate to="/catalog/products" replace />} />
-                <Route path="/catalog/categories" element={ph("modules.catalog_categories")} />
-                <Route path="/catalog/brands" element={ph("modules.catalog_brands")} />
-                <Route path="/catalog/products" element={<ProductsListPage />} />
-                <Route path="/catalog/products/new" element={<ProductCreatePage />} />
-                <Route path="/catalog/products/:id" element={<ProductDetailPage />} />
-                <Route path="/catalog/products/:id/edit" element={<ProductEditPage />} />
+                <Route
+                  path="/catalog/categories"
+                  element={gate("product:read", ph("modules.catalog_categories"))}
+                />
+                <Route
+                  path="/catalog/brands"
+                  element={gate("product:read", ph("modules.catalog_brands"))}
+                />
+                <Route
+                  path="/catalog/products"
+                  element={gate("product:read", <ProductsListPage />)}
+                />
+                <Route
+                  path="/catalog/products/new"
+                  element={gate("product:write", <ProductCreatePage />)}
+                />
+                <Route
+                  path="/catalog/products/:id"
+                  element={gate("product:read", <ProductDetailPage />)}
+                />
+                <Route
+                  path="/catalog/products/:id/edit"
+                  element={gate("product:write", <ProductEditPage />)}
+                />
 
                 {/* Warehouse */}
                 <Route
                   path="/warehouse"
                   element={<Navigate to="/warehouse/warehouses" replace />}
                 />
-                <Route path="/warehouse/warehouses" element={ph("modules.warehouse_warehouses")} />
-                <Route path="/warehouse/stock" element={ph("modules.warehouse_stock")} />
-                <Route path="/warehouse/movements" element={ph("modules.warehouse_movements")} />
-                <Route path="/warehouse/inventory" element={ph("modules.warehouse_inventory")} />
+                <Route
+                  path="/warehouse/warehouses"
+                  element={gate("warehouse:read", ph("modules.warehouse_warehouses"))}
+                />
+                <Route
+                  path="/warehouse/stock"
+                  element={gate("warehouse:read", ph("modules.warehouse_stock"))}
+                />
+                <Route
+                  path="/warehouse/movements"
+                  element={gate("warehouse:read", ph("modules.warehouse_movements"))}
+                />
+                <Route
+                  path="/warehouse/inventory"
+                  element={gate("warehouse:read", ph("modules.warehouse_inventory"))}
+                />
 
                 {/* Customers */}
-                <Route path="/customers" element={ph("modules.customers")} />
+                <Route path="/customers" element={gate("customer:read", ph("modules.customers"))} />
 
                 {/* Sales */}
                 <Route path="/sales" element={<Navigate to="/sales/orders" replace />} />
-                <Route path="/sales/orders" element={ph("modules.sales_orders")} />
-                <Route path="/sales/invoices" element={ph("modules.sales_invoices")} />
-                <Route path="/sales/returns" element={ph("modules.sales_returns")} />
+                <Route
+                  path="/sales/orders"
+                  element={gate("order:read", ph("modules.sales_orders"))}
+                />
+                <Route
+                  path="/sales/invoices"
+                  element={gate("order:read", ph("modules.sales_invoices"))}
+                />
+                <Route
+                  path="/sales/returns"
+                  element={gate("order:read", ph("modules.sales_returns"))}
+                />
 
                 {/* Procurement */}
                 <Route
@@ -85,25 +133,34 @@ export default function App() {
                 />
                 <Route
                   path="/procurement/suppliers"
-                  element={ph("modules.procurement_suppliers")}
+                  element={gate("purchase:read", ph("modules.procurement_suppliers"))}
                 />
                 <Route
                   path="/procurement/purchases"
-                  element={ph("modules.procurement_purchases")}
+                  element={gate("purchase:read", ph("modules.procurement_purchases"))}
                 />
 
                 {/* Finance */}
                 <Route path="/finance" element={<Navigate to="/finance/accounts" replace />} />
-                <Route path="/finance/accounts" element={ph("modules.finance_accounts")} />
-                <Route path="/finance/payments" element={ph("modules.finance_payments")} />
-                <Route path="/finance/debts" element={ph("modules.finance_debts")} />
+                <Route
+                  path="/finance/accounts"
+                  element={gate("accounting:read", ph("modules.finance_accounts"))}
+                />
+                <Route
+                  path="/finance/payments"
+                  element={gate("accounting:read", ph("modules.finance_payments"))}
+                />
+                <Route
+                  path="/finance/debts"
+                  element={gate("accounting:read", ph("modules.finance_debts"))}
+                />
 
                 {/* Notifications / Audit / Users */}
                 <Route path="/notifications" element={ph("modules.notifications")} />
-                <Route path="/audit" element={ph("modules.audit")} />
-                <Route path="/users" element={<UsersListPage />} />
-                <Route path="/users/new" element={<UserCreatePage />} />
-                <Route path="/users/:id/edit" element={<UserEditPage />} />
+                <Route path="/audit" element={gate("audit:read", ph("modules.audit"))} />
+                <Route path="/users" element={gate("user:read", <UsersListPage />)} />
+                <Route path="/users/new" element={gate("user:write", <UserCreatePage />)} />
+                <Route path="/users/:id/edit" element={gate("user:write", <UserEditPage />)} />
               </Route>
             </Route>
 

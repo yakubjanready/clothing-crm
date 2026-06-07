@@ -13,12 +13,15 @@ interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
   refreshToken: string | null;
-  login: (access: string, refresh: string, user: AuthUser) => void;
+  permissionCodes: string[];
+  login: (access: string, refresh: string, user: AuthUser, permissions: string[]) => void;
   setTokens: (access: string, refresh: string) => void;
   setUser: (user: AuthUser) => void;
+  setPermissions: (codes: string[]) => void;
   logout: () => void;
   hasRole: (name: string) => boolean;
-  permissions: () => Set<string>;
+  hasPermission: (code: string) => boolean;
+  hasAnyPermission: (codes: readonly string[]) => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -27,12 +30,20 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       accessToken: null,
       refreshToken: null,
-      login: (access, refresh, user) => set({ accessToken: access, refreshToken: refresh, user }),
+      permissionCodes: [],
+      login: (access, refresh, user, permissions) =>
+        set({ accessToken: access, refreshToken: refresh, user, permissionCodes: permissions }),
       setTokens: (access, refresh) => set({ accessToken: access, refreshToken: refresh }),
       setUser: (user) => set({ user }),
-      logout: () => set({ user: null, accessToken: null, refreshToken: null }),
+      setPermissions: (codes) => set({ permissionCodes: codes }),
+      logout: () => set({ user: null, accessToken: null, refreshToken: null, permissionCodes: [] }),
       hasRole: (name) => get().user?.roles.some((r) => r.name === name) ?? false,
-      permissions: () => new Set<string>(), // backend /me kengaytirsa to'ldiriladi
+      hasPermission: (code) => get().permissionCodes.includes(code),
+      hasAnyPermission: (codes) => {
+        if (codes.length === 0) return true;
+        const set = new Set(get().permissionCodes);
+        return codes.some((c) => set.has(c));
+      },
     }),
     {
       name: "crm-auth",
@@ -40,9 +51,11 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         user: state.user,
+        permissionCodes: state.permissionCodes,
       }),
     },
   ),
 );
 
 export const useIsAuthenticated = () => useAuthStore((s) => Boolean(s.accessToken && s.user));
+export const usePermissions = () => useAuthStore((s) => s.permissionCodes);

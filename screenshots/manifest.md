@@ -172,3 +172,12 @@ Har bir fazada to'plangan dalillar ro'yxati. Nomlash:
 | users__faza20__03-endpoints.png       | 20 | users | Yangi REST routelar: GET/PATCH/DELETE /users, /restore, /reset-password, /me/permissions + GET /roles (permission_codes bilan) |
 | users__faza20__04-frontend-tree.png   | 20 | users | Frontend struktura: src/pages/users/* (List/Create/Edit/Form/RolesMultiSelect + schema testi), src/api/users.ts, types.ts'ga AppUser+Role qo'shildi |
 | users__faza20__05-build-success.png   | 20 | users | Vite production build muvaffaqiyatli — 2119 ta modul, 734 KB → 222 KB gzip; foydalanuvchilar sahifalari TS strict mode'da o'tdi |
+
+## Faza 21 — Rol-asoslangan UI yashirish (sidebar + route gating, BTEC C.M3)
+
+| Fayl | Faza | BTEC mezon | Izoh |
+|------|------|------------|------|
+| rbac__faza21__01-vitest-green.png       | 21 | rbac_ui | 32/32 frontend test yashil; jumladan 8 ta yangi nav-items testi (warehouse-only/sales/hr/admin/no-perms) + 7 ta auth store testi (hasPermission, hasAnyPermission, logout reset) |
+| rbac__faza21__02-permissions-matrix.png | 21 | rbac_ui | Rol bo'yicha sidebar matritsasi: warehouse-only user faqat Dashboard + Warehouse ko'radi; sales user — Customers + Sales; hr user — HR; admin — barchasi (9 modul) |
+| rbac__faza21__03-arch.png               | 21 | rbac_ui | Implementation: auth store'da permissionCodes, PermissionGate komponenti, nav-items.requires + filterNav, login oqimida /auth/me + /users/me/permissions parallel chaqiruv |
+| rbac__faza21__04-build-success.png      | 21 | rbac_ui | Vite production build — 737 KB → 223 KB gzip; PermissionGate + filterNav qo'shilgani holda TS strict, ESLint, Prettier — barchasi toza |

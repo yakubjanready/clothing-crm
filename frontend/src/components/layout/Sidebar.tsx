@@ -1,11 +1,12 @@
 import { ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation } from "react-router-dom";
 
-import { NAV_ITEMS, type NavItem } from "@/components/layout/nav-items";
+import { filterNav, NAV_ITEMS, type NavItem } from "@/components/layout/nav-items";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { usePermissions } from "@/stores/auth";
 
 function isActiveParent(item: NavItem, pathname: string): boolean {
   if (pathname === item.to) return true;
@@ -71,6 +72,9 @@ function NavGroup({ item }: { item: NavItem }) {
 }
 
 export function SidebarContent() {
+  const perms = usePermissions();
+  const visibleItems = useMemo(() => filterNav(NAV_ITEMS, new Set(perms)), [perms]);
+
   return (
     <nav className="flex h-full flex-col gap-1 p-4">
       <div className="px-2 pb-4">
@@ -86,7 +90,7 @@ export function SidebarContent() {
       </div>
       <Separator className="mb-2" />
       <div className="flex-1 space-y-1 overflow-y-auto">
-        {NAV_ITEMS.map((item) =>
+        {visibleItems.map((item) =>
           item.children ? (
             <NavGroup key={item.to} item={item} />
           ) : (
