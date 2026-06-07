@@ -166,10 +166,13 @@ Production domen: **https://negative.uz** (+ `www.negative.uz` → apex redirect
    ```
 5. **Birinchi sertifikatni olish** (BIR MARTA, idempotent):
    ```bash
-   sudo ./scripts/init-letsencrypt.sh
+   ./scripts/init-letsencrypt.sh
    ```
-   - Dummy cert yaratiladi → nginx ko'tariladi → certbot real cert oladi → nginx reload
-   - Staging rejimida sinash uchun: `CERTBOT_STAGING=1 sudo ./scripts/init-letsencrypt.sh`
+   - Mavjud cert tekshiriladi → bo'lsa nginx ko'tariladi va exit
+   - Bo'lmasa: nginx to'xtatiladi → certbot standalone 80 portni oladi → cert
+     volumega yoziladi → nginx yangi cert bilan ko'tariladi
+   - Staging rejimida sinash uchun: `CERTBOT_STAGING=1 ./scripts/init-letsencrypt.sh`
+   - **Eslatma**: sudo kerak emas — barcha amallar Docker konteynerlari ichida ishlaydi
 
 **Avtomatik renewal:**
 - `crm-certbot` konteyneri har 12 soatda `certbot renew` ishga tushiradi
