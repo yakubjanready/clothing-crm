@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  passwordResetSchema,
-  userCreateSchema,
-  userEditSchema,
-} from "./user-schema";
+import { passwordResetSchema, userCreateSchema, userEditSchema } from "./user-schema";
 
 const VALID_UUID = "00000000-0000-0000-0000-000000000001";
 

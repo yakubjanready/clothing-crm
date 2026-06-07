@@ -162,9 +162,7 @@ export function UserEditPage() {
                       />
                     </FormControl>
                     {isSelf && (
-                      <p className="text-xs text-muted-foreground">
-                        {t("users.cannot_self_role")}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{t("users.cannot_self_role")}</p>
                     )}
                     <FormMessage />
                   </FormItem>

@@ -37,11 +37,11 @@ class RoleListRead(BaseModel):
 
 
 __all__ = [
-    "UserRead",
-    "UserListItem",
-    "UserUpdate",
-    "PasswordReset",
-    "RoleRead",
-    "RoleListRead",
     "EmailStr",
+    "PasswordReset",
+    "RoleListRead",
+    "RoleRead",
+    "UserListItem",
+    "UserRead",
+    "UserUpdate",
 ]

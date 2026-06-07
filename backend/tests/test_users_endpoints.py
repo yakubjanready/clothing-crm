@@ -118,9 +118,7 @@ async def test_list_users_filter_is_active(
 ) -> None:
     extra_user.is_active = False
     await test_db.commit()
-    resp = await client.get(
-        "/api/v1/users", headers=admin_headers, params={"is_active": "false"}
-    )
+    resp = await client.get("/api/v1/users", headers=admin_headers, params={"is_active": "false"})
     assert resp.status_code == 200
     body = resp.json()
     assert body["total"] == 1

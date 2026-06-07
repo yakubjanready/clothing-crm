@@ -101,12 +101,7 @@ export function UsersListPage() {
             </Link>
           </Button>
           {u.is_active ? (
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => setToDelete(u)}
-              aria-label="delete"
-            >
+            <Button size="icon" variant="ghost" onClick={() => setToDelete(u)} aria-label="delete">
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           ) : (
