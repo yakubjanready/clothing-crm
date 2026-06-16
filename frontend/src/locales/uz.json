@@ -24,7 +24,7 @@
   },
   "auth": {
     "title": "Tizimga kirish",
-    "subtitle": "Ulgurji kiyim-kechak CRM",
+    "subtitle": "Remodul kiyim-kechak CRM",
     "email": "Email",
     "password": "Parol",
     "login": "Kirish",
@@ -65,7 +65,7 @@
   },
   "dashboard": {
     "welcome": "Xush kelibsiz",
-    "welcome_message": "Ulgurji kiyim-kechak CRM tizimiga xush kelibsiz",
+    "welcome_message": "Remodul kiyim-kechak CRM tizimiga xush kelibsiz",
     "quick_stats": "Tezkor statistika"
   },
   "theme": {
@@ -158,7 +158,7 @@
     "matrix_desc": "O'lcham va rang kombinatsiyalarini avtomatik yaratish",
     "sizes": "O'lchamlar (vergul bilan)",
     "colors": "Ranglar (vergul bilan; #hex bo'lishi mumkin)",
-    "wholesale": "Ulgurji narx",
+    "wholesale": "Remodul narx",
     "retail": "Chakana narx",
     "create_matrix": "Matritsa yaratish",
     "created_count": "Yaratildi: {{count}}",
