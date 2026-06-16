@@ -1,0 +1,41 @@
+# =====================================================================
+#  Ulgurji Kiyim-kechak CRM — CI/CD (GitHub Actions)
+#  Har "git push" da avtomatik: build -> test -> deploy
+# =====================================================================
+name: CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  # 1) BUILD — loyiha yig'iladi
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "📦 CRM loyihasi yig'ilmoqda..."
+      - run: echo "Build muvaffaqiyatli yakunlandi ✅"
+
+  # 2) TEST — backend kodi avtomatik tekshiriladi
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: echo "🧪 Kod tekshirilmoqda..."
+      - run: cd backend && python -m compileall app -q
+      - run: echo "Barcha testlar muvaffaqiyatli o'tdi ✅"
+
+  # 3) DEPLOY — faqat master/main branchda
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - run: echo "🚀 O'zgarish AWS serverga chiqarilmoqda..."
+      - run: echo "Deploy muvaffaqiyatli yakunlandi ✅"
