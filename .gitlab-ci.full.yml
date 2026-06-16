@@ -1,0 +1,212 @@
+# =====================================================================
+# Ulgurji Kiyim-kechak CRM — GitLab CI/CD pipeline
+# Bosqichlar: lint → test → build → deploy (BTEC D.P8)
+#
+# CI/CD Variables (Settings → CI/CD → Variables):
+#   SSH_PRIVATE_KEY  — Hetzner serverga kirish uchun maxfiy SSH kalit (File turi, masked)
+#   SERVER_IP        — Hetzner server IP yoki DNS nomi
+#   DB_PASSWORD      — PostgreSQL parol (test va prod uchun)
+#   JWT_SECRET       — SECRET_KEY (≥32 belgi)
+#   CI_REGISTRY_*    — GitLab tomonidan avtomatik beriladi (USER, PASSWORD, IMAGE)
+#   VITE_API_BASE_URL, VITE_SENTRY_DSN — frontend build args (ixtiyoriy)
+# =====================================================================
+
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+variables:
+  PIP_CACHE_DIR:    "$CI_PROJECT_DIR/.cache/pip"
+  npm_config_cache: "$CI_PROJECT_DIR/.cache/npm"
+  PYTHONDONTWRITEBYTECODE: "1"
+  # Registry image manzillari (GitLab Container Registry)
+  BACKEND_IMAGE:  "$CI_REGISTRY_IMAGE/backend"
+  FRONTEND_IMAGE: "$CI_REGISTRY_IMAGE/frontend"
+  IMAGE_TAG:      "$CI_COMMIT_SHORT_SHA"
+  # Deploy joylashuvi
+  REMOTE_DIR:  "/opt/crm"
+  REMOTE_USER: "deploy"
+
+default:
+  interruptible: true
+
+# ────────── Yashirin shablonlar (.foo) ──────────
+.python:
+  image: python:3.12-slim
+  cache:
+    key: "py-$CI_COMMIT_REF_SLUG"
+    paths: [.cache/pip]
+  before_script:
+    - cd backend
+    - python -m pip install --upgrade pip
+    - pip install -e ".[dev]"
+
+.node:
+  image: node:20-alpine
+  cache:
+    key: "node-$CI_COMMIT_REF_SLUG"
+    paths: [.cache/npm]
+  before_script:
+    - cd frontend
+    - npm ci --legacy-peer-deps --prefer-offline --no-audit
+
+.docker:
+  image: docker:27
+  services:
+    - name: docker:27-dind
+      alias: docker
+  variables:
+    DOCKER_HOST:         "tcp://docker:2375"
+    DOCKER_TLS_CERTDIR:  ""
+    DOCKER_DRIVER:       "overlay2"
+  before_script:
+    - docker info
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+
+.main-only:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+
+# =====================================================================
+# 1) LINT — kodning sifati va uslubi
+# =====================================================================
+backend:lint:
+  stage: lint
+  extends: .python
+  script:
+    - ruff check app tests
+    - black --check app tests
+    - mypy app
+
+frontend:lint:
+  stage: lint
+  extends: .node
+  script:
+    - npm run lint
+    - npm run format:check
+
+# =====================================================================
+# 2) TEST — pytest (postgres+redis xizmatlari) + vitest
+# =====================================================================
+backend:test:
+  stage: test
+  extends: .python
+  services:
+    - name: postgres:16-alpine
+      alias: postgres
+    - name: redis:7-alpine
+      alias: redis
+  variables:
+    POSTGRES_DB:       "crm_test"
+    POSTGRES_USER:     "crm"
+    POSTGRES_PASSWORD: "$DB_PASSWORD"
+    POSTGRES_HOST:     "postgres"
+    POSTGRES_PORT:     "5432"
+    DATABASE_URL:      "postgresql+asyncpg://crm:$DB_PASSWORD@postgres:5432/crm_test"
+    REDIS_URL:         "redis://redis:6379/0"
+    CELERY_BROKER_URL: "redis://redis:6379/1"
+    CELERY_RESULT_BACKEND: "redis://redis:6379/2"
+    SECRET_KEY:        "$JWT_SECRET"
+    APP_ENV:           "test"
+  script:
+    - pytest --cov=app --cov-report=term --cov-report=xml --cov-fail-under=80
+  coverage: '/TOTAL.+ ([0-9]+%)/'
+  artifacts:
+    when: always
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: backend/coverage.xml
+    expire_in: 1 week
+
+frontend:test:
+  stage: test
+  extends: .node
+  script:
+    - npm run test
+    - npm run build
+  artifacts:
+    paths: [frontend/dist]
+    expire_in: 3 days
+
+# =====================================================================
+# 3) BUILD — Docker image qurish va GitLab Registry'ga push (faqat main)
+# =====================================================================
+build:backend:
+  stage: build
+  extends:
+    - .docker
+    - .main-only
+  needs: ["backend:lint", "backend:test"]
+  script:
+    - docker build
+        --tag "$BACKEND_IMAGE:$IMAGE_TAG"
+        --tag "$BACKEND_IMAGE:latest"
+        backend
+    - docker push "$BACKEND_IMAGE:$IMAGE_TAG"
+    - docker push "$BACKEND_IMAGE:latest"
+
+build:frontend:
+  stage: build
+  extends:
+    - .docker
+    - .main-only
+  needs: ["frontend:lint", "frontend:test"]
+  script:
+    - docker build
+        --build-arg VITE_API_BASE_URL="${VITE_API_BASE_URL:-}"
+        --build-arg VITE_API_V1_PREFIX="/api/v1"
+        --build-arg VITE_SENTRY_DSN="${VITE_SENTRY_DSN:-}"
+        --tag "$FRONTEND_IMAGE:$IMAGE_TAG"
+        --tag "$FRONTEND_IMAGE:latest"
+        frontend
+    - docker push "$FRONTEND_IMAGE:$IMAGE_TAG"
+    - docker push "$FRONTEND_IMAGE:latest"
+
+# =====================================================================
+# 4) DEPLOY — Hetzner serverga SSH orqali + Alembic migratsiya
+# =====================================================================
+deploy:prod:
+  stage: deploy
+  image: alpine:3.20
+  extends: .main-only
+  needs: ["build:backend", "build:frontend"]
+  environment:
+    name: production
+    url:  "http://$SERVER_IP"
+  before_script:
+    - apk add --no-cache openssh-client rsync ca-certificates
+    - eval $(ssh-agent -s)
+    # SSH_PRIVATE_KEY GitLab'da File tipida — $SSH_PRIVATE_KEY fayl yo'lini beradi,
+    # demak ssh-add'ga to'g'ridan-to'g'ri fayl uzatamiz.
+    - chmod 600 "$SSH_PRIVATE_KEY"
+    - ssh-add "$SSH_PRIVATE_KEY"
+    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+    - ssh-keyscan -H "$SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
+  script:
+    # 4.1) Konfiguratsiya fayllarini serverga uzatish
+    - rsync -az --delete docker-compose.prod.yml "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/"
+    - rsync -az --delete nginx/                  "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/nginx/"
+    - rsync -az --delete --chmod=u+x scripts/    "$REMOTE_USER@$SERVER_IP:$REMOTE_DIR/scripts/"
+    # 4.2) Serverda: registry login → pull → up → alembic upgrade head → tozalash
+    #
+    # ESLATMA (TLS): birinchi marta deploy qilishdan oldin SERVERda BIR MARTA
+    # `sudo ./scripts/init-letsencrypt.sh` ishga tushiriladi. U Let's Encrypt
+    # sertifikatini oladi va volume'ga saqlaydi. Keyingi deploylar avtomatik
+    # ravishda mavjud cert'ni ishlatadi (har 6 soatda nginx reload + har 12 soatda renewal).
+    - |
+      ssh "$REMOTE_USER@$SERVER_IP" "set -euo pipefail; \
+        cd $REMOTE_DIR && \
+        echo '$CI_REGISTRY_PASSWORD' | docker login -u '$CI_REGISTRY_USER' --password-stdin '$CI_REGISTRY' && \
+        export BACKEND_IMAGE='$BACKEND_IMAGE:$IMAGE_TAG' && \
+        export FRONTEND_IMAGE='$FRONTEND_IMAGE:$IMAGE_TAG' && \
+        docker compose -f docker-compose.prod.yml --env-file .env.prod pull backend celery_worker celery_beat frontend && \
+        docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --no-build --remove-orphans && \
+        docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T backend alembic upgrade head && \
+        docker image prune -f"
+  rules:
+    # main/master + qo'lda tasdiq (avariya ehtimolini kamaytirish uchun)
+    - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+      when: manual
